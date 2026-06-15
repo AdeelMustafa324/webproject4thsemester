@@ -1,0 +1,59 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user/css/product_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="container product-detail-section">
+    <div class="product-images reveal">
+        {% if product.thumbnail_url %}
+        <img src="{{ product.thumbnail_url.url }}" alt="{{ product.title }}" class="main-image">
+        {% else %}
+        <div class="image-placeholder"></div>
+        {% endif %}
+    </div>
+
+    <div class="product-info reveal">
+        <span class="format-badge format-badge--{{ product.category.slug }}">{{ product.category.name }}</span>
+        <h1>{{ product.title }}</h1>
+        <p class="cost">{{ product.cost }} Connects</p>
+
+        <div class="description">
+            <h3>Description</h3>
+            <p>{{ product.description }}</p>
+        </div>
+
+        <div class="action-section">
+            {% if has_purchased %}
+            <div class="alert success">You own this product!</div>
+            <div class="action-buttons">
+                <button type="button" class="btn-edit btn-edit--disabled" data-action="edit-coming-soon">
+                    Edit in Browser
+                    <span class="badge badge--soon">Coming Soon</span>
+                </button>
+                {% if product.file_url %}
+                <a href="{{ product.file_url.url }}" target="_blank" class="btn-secondary">Download</a>
+                {% endif %}
+            </div>
+            {% else %}
+            {% if user.is_authenticated %}
+            <form action="{% url 'core_app:product_detail' product.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-primary buy-btn w-100">Buy with Connects</button>
+            </form>
+            {% else %}
+            <a href="{% url 'core_app:login' %}?next={% url 'core_app:product_detail' product.id %}" class="btn-primary buy-btn w-100">Login to Purchase</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/product_detail.js' %}"></script>
+{% endblock %}

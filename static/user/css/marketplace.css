@@ -1,0 +1,113 @@
+.marketplace-hero {
+    background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+    padding: 60px 0 50px;
+    text-align: center;
+    color: var(--color-white);
+}
+
+.marketplace-hero h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 10px;
+}
+
+.marketplace-hero p {
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 28px;
+}
+
+.search-bar {
+    display: flex;
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.search-bar input:focus {
+    outline: none;
+}
+
+.search-btn {
+    background: var(--color-gold);
+    border: none;
+    padding: 0 20px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background var(--transition);
+}
+
+.search-btn:hover {
+    background: var(--color-gold-hover);
+}
+
+.marketplace-layout {
+    display: flex;
+    gap: 40px;
+    padding: 50px 20px 80px;
+}
+
+.marketplace-sidebar {
+    width: 280px;
+}
+
+.category-nav .sidebar-link {
+    font-size: 0.9rem;
+    padding: 10px 14px;
+}
+
+.product-card {
+    transition: opacity 0.28s ease, transform 0.28s ease, box-shadow var(--transition);
+}
+
+.products-grid {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 28px;
+}
+
+.card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e8e8e8, #f5f5f5);
+}
+
+.buy-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.products-grid .empty-state {
+    grid-column: 1 / -1;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    padding: 60px;
+}
+
+@media (max-width: 768px) {
+    .marketplace-layout {
+        flex-direction: column;
+    }
+
+    .filters-sidebar {
+        width: 100%;
+        position: static;
+    }
+}

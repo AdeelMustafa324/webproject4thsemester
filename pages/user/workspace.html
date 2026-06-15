@@ -1,0 +1,107 @@
+{% extends 'user/tools_base.html' %}
+{% load static %}
+
+{% block title %}Workspace{% endblock %}
+
+{% block tool_css %}
+<link rel="stylesheet" href="{% static 'user/css/workspace.css' %}">
+<!-- CodeMirror 5 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/dracula.min.css">
+{% endblock %}
+
+{% block tool_content %}
+<div class="workspace-panel reveal">
+    <div class="workspace-panel-header">
+        <h1>My Workspace</h1>
+        <p>All your uploaded and converted files in one place.</p>
+    </div>
+
+    <div class="workspace-upload-zone" id="workspaceUploadZone">
+        <form id="workspaceUploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="upload-drop" id="workspaceDropArea">
+                <span class="upload-icon">&#128228;</span>
+                <span class="upload-msg">Drop files here or click to upload</span>
+                <input type="file" id="workspaceFileInput" name="file" class="file-input" multiple>
+            </div>
+        </form>
+    </div>
+
+    <div class="files-toolbar">
+        <span class="files-count">{{ files|length }} file{{ files|length|pluralize }}</span>
+        <div class="files-filter">
+            <button type="button" class="filter-chip active" data-filter="all">All</button>
+            <button type="button" class="filter-chip" data-filter="converted">Converted</button>
+            <button type="button" class="filter-chip" data-filter="uploaded">Uploaded</button>
+            <button type="button" class="filter-chip" data-filter="ai_generated">AI Generated</button>
+        </div>
+    </div>
+
+    <div class="files-grid" id="filesGrid">
+        {% for f in files %}
+        <article class="file-card" data-source="{{ f.source }}" data-id="{{ f.id }}">
+            <div class="file-card-icon file-card-icon--{{ f.conversion_type|default:'upload' }}">
+                {% if f.conversion_type == 'pdf2docx' or f.conversion_type == 'docx2pdf' %}&#128196;
+                {% elif f.conversion_type == 'excel2csv' %}&#128202;
+                {% elif f.conversion_type == 'ai' %}&#129302;
+                {% else %}&#128193;{% endif %}
+            </div>
+            <div class="file-card-body">
+                <h3>{{ f.original_name }}</h3>
+                <span class="file-meta">
+                    <span class="file-badge file-badge--{{ f.source }}">{{ f.get_source_display }}</span>
+                    {% if f.conversion_type %}<span class="file-type">{{ f.conversion_type }}</span>{% endif %}
+                    <span class="file-date">{{ f.created_at|date:"M d, Y H:i" }}</span>
+                </span>
+            </div>
+            <div class="file-card-actions">
+                <button type="button" class="btn-sm-action btn-edit-ws" data-id="{{ f.id }}" data-name="{{ f.original_name }}">Edit</button>
+                <button type="button" class="btn-sm-action btn-rename-ws" data-id="{{ f.id }}" data-name="{{ f.original_name }}">Rename</button>
+                <a href="{{ f.file.url }}" class="btn-sm-action btn-download" target="_blank" download>Download</a>
+                <button type="button" class="btn-sm-action btn-delete" data-id="{{ f.id }}">Delete</button>
+            </div>
+        </article>
+        {% empty %}
+        <div class="workspace-empty" id="workspaceEmpty">
+            <span class="empty-icon">&#128193;</span>
+            <h3>No files yet</h3>
+            <p>Convert documents using the tools in the sidebar, or upload files directly.</p>
+            <a href="{% url 'core_app:tool_pdf_to_word' %}" class="btn-primary">Start Converting</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Workspace File Editor Modal -->
+<div class="ws-modal-overlay" id="wsEditorModal" style="display: none;">
+    {% csrf_token %}
+    <div class="ws-modal-content">
+        <div class="ws-modal-header">
+            <h3 id="wsEditorTitle">Edit File</h3>
+            <button type="button" class="ws-modal-close" id="wsEditorClose">&times;</button>
+        </div>
+        <div class="ws-modal-body">
+            <div id="wsEditorCM" class="ws-editor-cm-container"></div>
+        </div>
+        <div class="ws-modal-footer">
+            <span id="wsEditorStatus"></span>
+            <div class="ws-modal-actions">
+                <button type="button" class="btn-secondary" id="wsEditorCancel">Cancel</button>
+                <button type="button" class="btn-primary" id="wsEditorSave" disabled>Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block tool_js %}
+<!-- CodeMirror 5 CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/python/python.min.js"></script>
+<script src="{% static 'user/js/workspace.js' %}?v=2"></script>
+{% endblock %}

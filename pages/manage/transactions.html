@@ -1,0 +1,57 @@
+{% extends 'manage/base.html' %}
+{% load static %}
+
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Transactions{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'manage/css/transactions.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row reveal">
+    <p class="page-desc">{{ transactions|length }} total transactions</p>
+    <div class="filter-bar">
+        <input type="search" id="txSearch" placeholder="Filter by user..." aria-label="Filter transactions">
+    </div>
+</div>
+
+<div class="data-table-wrap reveal">
+    <table class="data-table" id="transactionsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Product</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr data-user="{{ tx.user.username|lower }}">
+                <td>#{{ tx.id }}</td>
+                <td><strong>{{ tx.user.username }}</strong></td>
+                <td>
+                    <span class="tx-type tx-type--{{ tx.transaction_type }}">
+                        {{ tx.get_transaction_type_display }}
+                    </span>
+                </td>
+                <td class="{% if tx.transaction_type == 'purchase_connects' %}tx-positive{% else %}tx-negative{% endif %}">
+                    {% if tx.transaction_type == 'purchase_connects' %}+{% else %}-{% endif %}{{ tx.amount }}
+                </td>
+                <td>{% if tx.product %}{{ tx.product.title }}{% else %}—{% endif %}</td>
+                <td>{{ tx.timestamp|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="empty-state">No transactions yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'manage/js/transactions.js' %}"></script>
+{% endblock %}

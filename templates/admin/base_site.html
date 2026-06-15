@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | SkipStep Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">SkipStep Management</a></h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Custom UI/UX for SkipStep Admin */
+    :root {
+        --primary: #0A192F;
+        --secondary: #112240;
+        --accent: #D4AF37;
+        --text-light: #F8F9FA;
+    }
+    
+    #header {
+        background: var(--primary);
+        color: var(--text-light);
+    }
+    
+    #branding h1, #branding h1 a:link, #branding h1 a:visited {
+        color: var(--accent);
+        font-weight: bold;
+    }
+    
+    div.breadcrumbs {
+        background: var(--secondary);
+        color: var(--accent);
+    }
+    
+    div.breadcrumbs a {
+        color: var(--text-light);
+    }
+    
+    a:link, a:visited {
+        color: var(--primary);
+    }
+    
+    a:hover {
+        color: var(--accent);
+    }
+    
+    .module h2, .module caption, .inline-group h2 {
+        background: var(--primary);
+        color: var(--text-light);
+    }
+    
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--accent);
+        color: var(--primary);
+        border-radius: 4px;
+        font-weight: bold;
+    }
+    
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+        background: #F1C40F;
+        color: var(--primary);
+    }
+</style>
+{% endblock %}

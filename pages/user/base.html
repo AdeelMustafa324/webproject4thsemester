@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SkipStep{% endblock %} — Digital Products & Workspace</title>
+    <link rel="stylesheet" href="{% static 'shared/css/design-tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'shared/css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'shared/css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'user/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'user/css/ai_chat.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="page-enter">
+    {% block layout %}
+    {% block header %}
+    <header class="site-header">
+        <div class="container header-container">
+            <a href="{% url 'core_app:home' %}" class="logo">SkipStep</a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{% url 'core_app:marketplace' %}" {% if request.resolver_match.url_name == 'marketplace' %}class="active"{% endif %}>Marketplace</a></li>
+                    <li><a href="{% url 'core_app:tool_pdf_to_word' %}" {% if 'tool_' in request.resolver_match.url_name|default:'' %}class="active"{% endif %}>Tools</a></li>
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'core_app:workspace' %}" {% if request.resolver_match.url_name == 'workspace' %}class="active"{% endif %}>Workspace</a></li>
+                    <li><a href="{% url 'core_app:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Dashboard</a></li>
+                    <li><a href="{% url 'core_app:store' %}" class="connects-btn">Connects: {{ user.connects_balance }}</a></li>
+                    <li>
+                        <form action="{% url 'core_app:logout' %}" method="post" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn">Logout</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li><a href="{% url 'core_app:login' %}">Login</a></li>
+                    <li><a href="{% url 'core_app:register' %}" class="btn-nav-register">Sign Up</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+    {% endblock %}
+
+    {% block main %}
+    <main>
+        {% if messages %}
+        <div class="container messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+    {% endblock %}
+
+    {% block footer %}
+    <footer class="site-footer">
+        <div class="container footer-container">
+            <div class="footer-brand">
+                <span class="logo">SkipStep</span>
+                <p>Premium digital products for Excel, PowerPoint, Word & Canva.</p>
+            </div>
+            <div class="footer-links">
+                <a href="{% url 'core_app:marketplace' %}">Marketplace</a>
+                <a href="{% url 'core_app:workspace' %}">Workspace</a>
+                <a href="{% url 'core_app:store' %}">Store</a>
+            </div>
+            <p class="footer-copy">&copy; 2026 SkipStep. All rights reserved.</p>
+        </div>
+    </footer>
+    {% endblock %}
+    {% endblock %}
+
+    <!-- Coming Soon Modal (shared) -->
+    <div id="comingSoonModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Coming Soon</h3>
+            <p>Full in-browser editing is on the way. Download your product for now.</p>
+            <button class="modal-close">Got it</button>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <!-- AI CHAT FLOATING BUTTON + POPUP -->
+    <button class="ai-fab" id="aiFab" aria-label="Open AI Assistant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+    </button>
+
+    <div class="ai-chat-container" id="aiChatContainer">
+        <div class="ai-chat-header">
+            <div class="ai-chat-header-left">
+                <div class="ai-chat-title" id="aiSessionTitle">New Chat</div>
+            </div>
+            <div class="ai-chat-header-actions">
+                <button id="aiNewChatBtn" title="New Chat">+</button>
+                <button id="aiCloseBtn" title="Close">&times;</button>
+            </div>
+        </div>
+
+        <div class="ai-chat-tabs">
+            <button class="ai-chat-tab active" data-tab="aiMessagesPanel">Chat</button>
+            <button class="ai-chat-tab" data-tab="aiFilesPanel">Files</button>
+            <button class="ai-chat-tab" data-tab="aiHistoryPanel">History</button>
+        </div>
+
+        <div class="ai-chat-panel active" id="aiMessagesPanel">
+            <div class="ai-chat-messages" id="aiChatMessages"></div>
+            <div class="ai-chat-input-area">
+                <textarea class="ai-chat-input" id="aiChatInput" placeholder="Ask SkipStep AI..." rows="1"></textarea>
+                <button class="ai-chat-send-btn" id="aiChatSendBtn">Send</button>
+            </div>
+        </div>
+
+        <div class="ai-chat-panel" id="aiFilesPanel">
+            <div class="ai-files-list" id="aiFileList"></div>
+        </div>
+
+        <div class="ai-chat-panel" id="aiHistoryPanel">
+            <div class="ai-history-list" id="aiHistoryList"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{% static 'shared/js/effects.js' %}"></script>
+    <script src="{% static 'user/js/base.js' %}"></script>
+    {% if user.is_authenticated %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="{% static 'user/js/ai_chat.js' %}"></script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

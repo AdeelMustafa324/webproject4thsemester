@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Login — SkipStep</title>
+    <link rel="stylesheet" href="{% static 'shared/css/design-tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'shared/css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'shared/css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'manage/css/login.css' %}">
+</head>
+<body class="manage-login-page page-enter">
+    <div class="manage-login-card reveal">
+        <div class="manage-login-header">
+            <span class="manage-login-logo">SkipStep</span>
+            <h1>Management Panel</h1>
+            <p>Staff access only</p>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" class="manage-login-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn-primary w-100">Sign In to Manage</button>
+        </form>
+
+        <a href="{% url 'core_app:home' %}" class="manage-login-back">&larr; Back to site</a>
+    </div>
+    <script src="{% static 'manage/js/login.js' %}"></script>
+</body>
+</html>

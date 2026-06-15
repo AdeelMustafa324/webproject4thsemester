@@ -1,0 +1,84 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user/css/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-blob hero-blob--1"></div>
+    <div class="hero-blob hero-blob--2"></div>
+    <div class="hero-blob hero-blob--3"></div>
+    <div class="container hero-content reveal">
+        <span class="hero-eyebrow">Digital Products Marketplace</span>
+        <h1>Accelerate Your Workflow with Premium Products</h1>
+        <p>SkipStep is your definitive digital goods marketplace and productivity workspace. Buy Excel, PowerPoint, Word & Canva products with Connects — edit them live, coming soon.</p>
+        <div class="hero-actions">
+            <a href="{% url 'core_app:marketplace' %}" class="btn-primary hero-btn">Explore Marketplace</a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'core_app:register' %}" class="btn-secondary hero-btn-secondary">Get Started Free</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="format-strip">
+    <div class="container format-strip-inner">
+        <div class="format-item format-item--excel"><span>Excel</span></div>
+        <div class="format-item format-item--ppt"><span>PowerPoint</span></div>
+        <div class="format-item format-item--word"><span>Word</span></div>
+        <div class="format-item format-item--canva"><span>Canva</span></div>
+    </div>
+</section>
+
+<section class="container featured-section">
+    <h2 class="reveal">Featured Products</h2>
+    <p class="featured-sub reveal">Hand-picked premium products to supercharge your workflow.</p>
+    <div class="carousel-container reveal">
+        <button class="carousel-btn prev-btn" id="prevBtn" aria-label="Previous">&#10094;</button>
+        <div class="carousel-track-wrapper">
+            <ul class="carousel-track" id="carouselTrack">
+                {% for product in featured_products %}
+                <li class="carousel-slide">
+                    <article class="product-card">
+                        <div class="card-image-wrapper">
+                            {% if product.thumbnail_url %}
+                            <img src="{{ product.thumbnail_url.url }}" alt="{{ product.title }}">
+                            {% else %}
+                            <div class="card-placeholder"></div>
+                            {% endif %}
+                            <div class="card-overlay">
+                                <span class="cost-badge">{{ product.cost }} Connects</span>
+                                <a href="{% url 'core_app:product_detail' product.id %}" class="btn-primary buy-btn">View Details</a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <span class="category-tag">{{ product.category.name }}</span>
+                            <h3>{{ product.title }}</h3>
+                        </div>
+                    </article>
+                </li>
+                {% empty %}
+                <li class="empty-state">No products available yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button class="carousel-btn next-btn" id="nextBtn" aria-label="Next">&#10095;</button>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container cta-inner reveal">
+        <h2>Ready to boost your productivity?</h2>
+        <p>Join thousands of professionals using SkipStep products.</p>
+        <a href="{% url 'core_app:marketplace' %}" class="btn-primary">Browse All Products</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/landing.js' %}"></script>
+{% endblock %}

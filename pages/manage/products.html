@@ -1,0 +1,58 @@
+{% extends 'manage/base.html' %}
+{% load static %}
+
+{% block title %}Products{% endblock %}
+{% block page_title %}Products{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'manage/css/products.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row reveal">
+    <p class="page-desc">{{ products|length }} products in catalog</p>
+    <a href="{% url 'core_app:manage_product_form' %}" class="btn-primary">+ Add Product</a>
+</div>
+
+<div class="data-table-wrap reveal">
+    <table class="data-table" id="productsTable">
+        <thead>
+            <tr>
+                <th>Thumb</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Cost</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>
+                    {% if product.thumbnail_url %}
+                    <img src="{{ product.thumbnail_url.url }}" alt="" class="table-thumb">
+                    {% else %}
+                    <span class="no-thumb">—</span>
+                    {% endif %}
+                </td>
+                <td><strong>{{ product.title }}</strong></td>
+                <td>{{ product.category.name }}</td>
+                <td>{{ product.cost }} Connects</td>
+                <td><span class="status-badge status-badge--live">Published</span></td>
+                <td class="table-actions">
+                    <a href="{% url 'core_app:manage_product_form' %}?id={{ product.id }}" class="btn-sm btn-sm--edit">Edit</a>
+                    <a href="{% url 'core_app:product_detail' product.id %}" class="btn-sm btn-sm--view" target="_blank">View</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="empty-state">No products yet. <a href="{% url 'core_app:manage_product_form' %}">Add one</a></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'manage/js/products.js' %}"></script>
+{% endblock %}

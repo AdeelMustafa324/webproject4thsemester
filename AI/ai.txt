@@ -1,0 +1,79 @@
+=========================================================
+      AI CHATBOT INTEGRATION & FILE MANIPULATION GUIDE
+=========================================================
+
+1. FOLDER STRUCTURE
+---------------------------------------------------------
+This `AI/` directory will serve as your new Django app for the chatbot. Once fully initialized, the structure will look like this:
+
+SkipStep/
+  |-- AI/
+      |-- __init__.py
+      |-- apps.py            (Django app config)
+      |-- urls.py            (Routes for the chat UI and endpoints)
+      |-- views.py           (Handles web requests from the frontend)
+      |-- ai_tools.py        (Python functions that the AI can use: read/write/generate)
+      |-- gemini_service.py  (Handles communication with Google's API)
+      |-- templates/
+          |-- AI/
+              |-- chat.html  (The frontend user interface)
+  |-- media/
+      |-- ai_workspace/      (The isolated sandbox folder where AI edits/generates files)
+
+
+2. HOW TO GET THE FREE AI API KEY (Google Gemini)
+---------------------------------------------------------
+We will use Google Gemini because it provides a generous free tier and natively supports "Function Calling" (allowing the AI to run Python code to edit files).
+
+Step 1: Go to Google AI Studio (https://aistudio.google.com/).
+Step 2: Sign in with your Google account.
+Step 3: In the left sidebar, click on "Get API key".
+Step 4: Click the "Create API key" button. (You may need to select or create a Google Cloud project).
+Step 5: Copy the generated API key.
+Step 6: In your main `SkipStep` project root, create a file named `.env`.
+Step 7: Add the key to the file like this: `GEMINI_API_KEY=your_copied_key_here`
+
+
+3. INTEGRATION PROCEDURE (Step-by-Step)
+---------------------------------------------------------
+
+STEP A: Install Dependencies
+Open your terminal, activate your virtual environment, and run:
+> pip install google-generativeai python-dotenv
+
+STEP B: Initialize the AI App in Django
+We need to register this AI folder as a Django app.
+1. Open `skipstep_project/settings.py`.
+2. Find the `INSTALLED_APPS` list.
+3. Add `'AI',` to the list.
+4. Add `import os` and `from dotenv import load_dotenv` at the top of `settings.py`.
+5. Call `load_dotenv()` to load your API key from the `.env` file.
+
+STEP C: Build the AI Tools (`ai_tools.py`)
+Create a file named `ai_tools.py` in this folder. We define secure functions here:
+- `generate_file(filename, content)`: Writes content to `media/ai_workspace/<filename>`.
+- `read_file(filename)`: Returns the text of `media/ai_workspace/<filename>`.
+- `list_files()`: Returns a list of files in the workspace.
+
+STEP D: Build the Gemini Service (`gemini_service.py`)
+This file connects to Google.
+1. Import `google.generativeai`.
+2. Configure it with your API key from settings.
+3. Create a model instance: `model = genai.GenerativeModel(model_name='gemini-1.5-flash', tools=[generate_file, read_file, list_files])`.
+4. Create a function `send_message(user_text)` that passes the text to the model and handles its tool calls.
+
+STEP E: Create the Views & URLs
+1. In `AI/views.py`, create a view called `chat_page` that renders `chat.html`.
+2. Create an API view called `send_message_api` that receives AJAX requests from the frontend, calls `gemini_service.send_message()`, and returns the AI's response.
+3. In `AI/urls.py`, link these views to paths like `/ai/` and `/ai/api/chat/`.
+4. Include `AI.urls` in your main `skipstep_project/urls.py`.
+
+STEP F: Build the Frontend (`chat.html`)
+Create a standard HTML page with:
+- A chat window (a div to append messages).
+- An input box and send button.
+- JavaScript to send the input to `/ai/api/chat/` using `fetch()`.
+- A sidebar that makes an AJAX call to list files and provides download links to `/media/ai_workspace/...`.
+
+=========================================================
+When you are ready to begin writing the actual code, let me know, and we can execute these steps one by one!

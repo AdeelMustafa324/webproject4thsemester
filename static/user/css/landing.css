@@ -1,0 +1,196 @@
+.hero-section {
+    position: relative;
+    background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 50%, var(--color-navy-dark) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 12s ease infinite;
+    color: var(--color-white);
+    padding: 120px 0 100px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-eyebrow {
+    display: inline-block;
+    background: rgba(212, 175, 55, 0.15);
+    color: var(--color-gold);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.hero-content h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--color-white);
+    line-height: 1.15;
+}
+
+.hero-content h1 span {
+    color: var(--color-gold);
+}
+
+.hero-content p {
+    font-size: 1.15rem;
+    max-width: 640px;
+    margin: 0 auto 36px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hero-btn-secondary {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--color-white);
+    background: transparent;
+}
+
+.hero-btn-secondary:hover {
+    background: var(--color-white);
+    color: var(--color-navy);
+}
+
+.format-strip {
+    background: var(--color-white);
+    padding: 24px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.format-strip-inner {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.format-item {
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.format-item--excel { background: rgba(33, 115, 70, 0.12); color: var(--format-excel); }
+.format-item--ppt { background: rgba(210, 71, 38, 0.12); color: var(--format-powerpoint); }
+.format-item--word { background: rgba(43, 87, 154, 0.12); color: var(--format-word); }
+.format-item--canva { background: rgba(0, 196, 204, 0.12); color: var(--format-canva); }
+
+.featured-section {
+    padding: 80px 20px;
+}
+
+.featured-section h2 {
+    font-size: 2.5rem;
+    text-align: center;
+    color: var(--color-navy);
+    margin-bottom: 8px;
+}
+
+.featured-sub {
+    text-align: center;
+    color: var(--color-text-light);
+    margin-bottom: 48px;
+}
+
+.carousel-container {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.carousel-track-wrapper {
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+.carousel-track {
+    display: flex;
+    list-style: none;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 30px;
+}
+
+.carousel-slide {
+    min-width: calc(33.333% - 20px);
+    flex-shrink: 0;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-navy);
+    color: var(--color-white);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+    transition: background var(--transition), transform var(--transition);
+    box-shadow: var(--shadow-md);
+}
+
+.carousel-btn:hover {
+    background: var(--color-gold);
+    color: var(--color-navy);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.prev-btn { left: -22px; }
+.next-btn { right: -22px; }
+
+.card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-navy-light), var(--color-navy));
+}
+
+.buy-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.cta-section {
+    background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.cta-inner h2 {
+    color: var(--color-white);
+    font-size: 2rem;
+    margin-bottom: 12px;
+}
+
+.cta-inner p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 28px;
+}
+
+@media (max-width: 768px) {
+    .carousel-slide { min-width: calc(50% - 15px); }
+    .prev-btn { left: 0; }
+    .next-btn { right: 0; }
+}
+
+@media (max-width: 480px) {
+    .carousel-slide { min-width: 100%; }
+}

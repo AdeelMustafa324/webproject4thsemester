@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<section class="container dashboard-header">
+    <h1>Welcome, {{ user.username }}</h1>
+    <section class="balance-card">
+        <h3>Connects Balance</h3>
+        <p class="balance-amount">{{ user.connects_balance }}</p>
+        <a href="{% url 'core_app:store' %}" class="btn-primary">Buy More Connects</a>
+    </section>
+</section>
+
+<section class="container dashboard-content">
+    <section class="dashboard-section templates-section">
+        <h2>Your Templates</h2>
+        <section class="products-grid">
+            {% for product in purchased_products %}
+            <article class="product-card">
+                <section class="card-image-wrapper">
+                    <img src="{% if product.thumbnail_url %}{{ product.thumbnail_url.url }}{% endif %}" alt="{{ product.title }}">
+                    <section class="card-overlay">
+                        <a href="{% url 'core_app:product_detail' product.id %}" class="btn-primary buy-btn">View Details</a>
+                    </section>
+                </section>
+                <section class="card-content">
+                    <span class="category-tag">{{ product.category.name }}</span>
+                    <h3>{{ product.title }}</h3>
+                </section>
+            </article>
+            {% empty %}
+            <p class="empty-state">You haven't purchased any templates yet. <a href="{% url 'core_app:marketplace' %}">Browse Marketplace</a></p>
+            {% endfor %}
+        </section>
+    </section>
+
+    <aside class="dashboard-section history-section">
+        <h2>Transaction History</h2>
+        <ul class="transaction-list">
+            {% for tx in transactions %}
+            <li class="transaction-item {% if tx.transaction_type == 'purchase_connects' %}positive{% else %}negative{% endif %}">
+                <section class="tx-info">
+                    <strong>{{ tx.get_transaction_type_display }}</strong>
+                    <span class="tx-date">{{ tx.timestamp|date:"M d, Y H:i" }}</span>
+                    {% if tx.product %}
+                    <span class="tx-product">{{ tx.product.title }}</span>
+                    {% endif %}
+                </section>
+                <section class="tx-amount">
+                    {% if tx.transaction_type == 'purchase_connects' %}+{% else %}-{% endif %}{{ tx.amount }}
+                </section>
+            </li>
+            {% empty %}
+            <li class="empty-state">No transactions yet.</li>
+            {% endfor %}
+        </ul>
+    </aside>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

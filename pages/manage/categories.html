@@ -1,0 +1,61 @@
+{% extends 'manage/base.html' %}
+{% load static %}
+
+{% block title %}Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'manage/css/categories.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="categories-layout">
+    <section class="add-category-panel reveal">
+        <h2>Add Category</h2>
+        <form action="#" method="post" class="inline-form" onsubmit="event.preventDefault(); alert('Category save API coming soon.');">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="e.g. Business Excel" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="2" placeholder="Optional description"></textarea>
+            </div>
+            <button type="submit" class="btn-primary w-100">Add Category</button>
+        </form>
+    </section>
+
+    <section class="categories-list reveal">
+        <h2>All Categories ({{ categories|length }})</h2>
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Slug</th>
+                        <th>Products</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td><strong>{{ cat.name }}</strong></td>
+                        <td><code>{{ cat.slug }}</code></td>
+                        <td>{{ cat.products.count }}</td>
+                        <td>{{ cat.description|truncatewords:12 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-state">No categories yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'manage/js/categories.js' %}"></script>
+{% endblock %}

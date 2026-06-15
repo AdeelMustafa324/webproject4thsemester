@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkipStep - Digital Goods & Productivity Workspace</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <section class="container header-container">
+            <a href="{% url 'core_app:home' %}" class="logo">SkipStep</a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{% url 'core_app:marketplace' %}">Marketplace</a></li>
+                    <li><a href="{% url 'core_app:workspace' %}">Workspace & Tools</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'core_app:dashboard' %}">Dashboard</a></li>
+                        <li><a href="{% url 'core_app:store' %}" class="connects-btn">Connects: {{ user.connects_balance }}</a></li>
+                        <li>
+                            <form action="{% url 'admin:logout' %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="logout-btn">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'admin:login' %}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </section>
+    </header>
+
+    <main>
+        {% if messages %}
+            <section class="container messages">
+                {% for message in messages %}
+                    <section class="alert {{ message.tags }}">
+                        {{ message }}
+                    </section>
+                {% endfor %}
+            </section>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <section class="container footer-container">
+            <p>&copy; 2026 SkipStep. All rights reserved.</p>
+        </section>
+    </footer>
+
+    <script src="/static/js/base.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,61 @@
+{% extends 'manage/base.html' %}
+{% load static %}
+
+{% block title %}{% if product %}Edit Product{% else %}New Product{% endif %}{% endblock %}
+{% block page_title %}{% if product %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'manage/css/product_form.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- INTEGRATION: product-upload-api — multipart upload endpoint -->
+<form class="product-form reveal" id="product-upload-api" action="#" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-grid">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" value="{% if product %}{{ product.title }}{% endif %}" required>
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" required>
+                <option value="">Select category</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="cost">Cost (Connects)</label>
+            <input type="number" id="cost" name="cost" value="{% if product %}{{ product.cost }}{% else %}0{% endif %}" min="0" required>
+        </div>
+        <div class="form-group form-group--full">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4" required>{% if product %}{{ product.description }}{% endif %}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="thumbnail">Thumbnail Image</label>
+            <input type="file" id="thumbnail" name="thumbnail" accept="image/*">
+            {% if product and product.thumbnail_url %}
+            <img src="{{ product.thumbnail_url.url }}" alt="" class="form-preview">
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="file">Product File</label>
+            <input type="file" id="file" name="file">
+            {% if product and product.file_url %}
+            <p class="form-hint">Current: {{ product.file_url.name }}</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="form-actions">
+        <a href="{% url 'core_app:manage_products' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary" onclick="event.preventDefault(); alert('Product save API coming soon.');">Save Product</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'manage/js/product_form.js' %}"></script>
+{% endblock %}

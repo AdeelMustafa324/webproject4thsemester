@@ -1,0 +1,37 @@
+.filter-bar input {
+    padding: 10px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    min-width: 220px;
+}
+
+.filter-bar input:focus {
+    outline: none;
+    border-color: var(--color-gold);
+}
+
+.tx-type {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.tx-type--purchase_connects {
+    background: rgba(46, 204, 113, 0.12);
+    color: var(--color-success);
+}
+
+.tx-type--spend_connects {
+    background: rgba(231, 76, 60, 0.12);
+    color: var(--color-danger);
+}
+
+.tx-positive { color: var(--color-success); font-weight: 700; }
+.tx-negative { color: var(--color-danger); font-weight: 700; }
+
+.page-desc {
+    color: var(--color-text-light);
+}

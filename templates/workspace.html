@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/workspace.css">
+{% endblock %}
+
+{% block content %}
+<section class="container workspace-header">
+    <h1>Productivity Workspace</h1>
+    <p>Convert documents and edit templates directly in your browser.</p>
+</section>
+
+<section class="container workspace-layout">
+    <!-- Document Converter Section -->
+    <section class="workspace-panel converter-panel">
+        <h2>Document Converter</h2>
+        <p>Instantly convert between PDF and Word formats.</p>
+
+        <form id="converterForm" class="converter-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="conversionType">Conversion Type</label>
+                <select id="conversionType" name="type" required>
+                    <option value="pdf2docx">PDF to Word (.docx)</option>
+                    <option value="docx2pdf">Word (.docx) to PDF</option>
+                </select>
+            </div>
+
+            <div class="form-group file-drop-area" id="fileDropArea">
+                <span class="drop-msg">Drag & Drop or Click to Upload</span>
+                <input type="file" id="fileInput" name="file" required class="file-input" accept=".pdf,.docx">
+            </div>
+
+            <button type="submit" class="btn-primary w-100">Convert Document</button>
+        </form>
+
+        <div id="converterResult" class="converter-result hidden">
+            <p id="converterMsg"></p>
+            <a href="#" id="downloadLink" class="btn-secondary hidden" target="_blank">Download Converted File</a>
+        </div>
+    </section>
+
+    <!-- Live Editor Section (Placeholder) -->
+    <section class="workspace-panel editor-panel">
+        <h2>Live Editor <span class="badge">Beta</span></h2>
+        <p>Select a format to initialize the embedded workspace API.</p>
+
+        <div class="editor-formats">
+            <button class="format-btn" data-format="excel">
+                <i class="icon-excel"></i> Excel
+            </button>
+            <button class="format-btn" data-format="word">
+                <i class="icon-word"></i> Word
+            </button>
+            <button class="format-btn" data-format="powerpoint">
+                <i class="icon-ppt"></i> PowerPoint
+            </button>
+            <button class="format-btn" data-format="canva">
+                <i class="icon-canva"></i> Canva
+            </button>
+        </div>
+
+        <div class="editor-container" id="editorContainer">
+            <div class="editor-placeholder">
+                <p>Select a format above to launch the editor.</p>
+            </div>
+        </div>
+    </section>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/workspace.js"></script>
+{% endblock %}

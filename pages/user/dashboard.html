@@ -1,0 +1,277 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css">
+<link rel="stylesheet" href="{% static 'user/css/dashboard.css' %}">
+{% endblock %}
+
+{% block layout %}
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <h1 class="brand">SkipStep</h1>
+      <nav class="nav-links">
+        <a href="{% url 'core_app:marketplace' %}">Marketplace</a>
+        <a href="{% url 'core_app:tool_pdf_to_word' %}">Tools</a>
+        <a href="{% url 'core_app:workspace' %}">Workspace</a>
+        <a href="{% url 'core_app:dashboard' %}" class="active">Dashboard</a>
+      </nav>
+    </div>
+    <div class="nav-right">
+      <button class="icon-btn"><i class="lucide lucide-search"></i></button>
+      <button class="icon-btn has-dot"><i class="lucide lucide-bell"></i></button>
+      <button class="connects-btn"><i class="lucide lucide-zap"></i> Connects: {{ user.connects_balance }}</button>
+      <form action="{% url 'core_app:logout' %}" method="post" style="display:inline; margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="logout-btn"><i class="lucide lucide-log-out"></i> Logout</button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="user-card">
+      <div class="user-icon"><i class="lucide lucide-lightbulb"></i></div>
+      <div>
+        <p class="user-hello">Welcome back</p>
+        <p class="user-name">{{ user.username }}</p>
+      </div>
+    </div>
+
+    <p class="side-label">Overview</p>
+    <a href="{% url 'core_app:dashboard' %}" class="side-link active"><i class="lucide lucide-layout-dashboard"></i> Dashboard</a>
+    <a href="#" class="side-link"><i class="lucide lucide-activity"></i> Analytics</a>
+
+    <p class="side-label">Conversion Tools</p>
+    <a href="{% url 'core_app:tool_pdf_to_word' %}" class="side-link"><i class="lucide lucide-wrench"></i> All Tools</a>
+    <a href="{% url 'core_app:tool_pdf_to_word' %}" class="side-link"><i class="lucide lucide-file-text"></i> PDF Toolkit</a>
+
+    <p class="side-label">Workspace</p>
+    <a href="{% url 'core_app:workspace' %}" class="side-link"><i class="lucide lucide-folder"></i> My Files</a>
+    <a href="#" class="side-link" onclick="document.getElementById('aiFab').click(); return false;"><i class="lucide lucide-sparkles"></i> AI Chat</a>
+
+    <p class="side-label">Marketplace</p>
+    <a href="{% url 'core_app:marketplace' %}" class="side-link"><i class="lucide lucide-store"></i> Browse Products</a>
+    <a href="#" class="side-link"><i class="lucide lucide-shopping-bag"></i> My Purchases</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    
+    {% if messages %}
+    <div style="margin-bottom:20px;">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}" style="padding:12px 20px; border-radius:8px; background:white; border-left:4px solid var(--gold); margin-bottom:10px;">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- HERO + CHART -->
+    <section class="grid-hero">
+      <div class="balance-hero">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <p class="eyebrow">Connects Balance</p>
+        <div class="balance-row">
+          <span class="balance-amount">{{ user.connects_balance }}</span>
+          <span class="badge badge-success"><i class="lucide lucide-trending-up"></i> +32 this week</span>
+        </div>
+        <p class="balance-desc">Use connects to unlock premium templates, AI generations and advanced conversions.</p>
+        <div class="hero-actions">
+          <a href="{% url 'core_app:store' %}" class="btn-gold"><i class="lucide lucide-plus"></i> Buy More Connects</a>
+          <button class="btn-ghost">View Plans <i class="lucide lucide-arrow-up-right"></i></button>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div>
+            <p class="muted-sm">Weekly Activity</p>
+            <p class="chart-total">144 actions</p>
+          </div>
+          <span class="badge badge-success-soft">+18%</span>
+        </div>
+        <div class="bars">
+          <div class="bar-col"><div class="bar" style="height:39%"></div><span>M</span></div>
+          <div class="bar-col"><div class="bar" style="height:61%"></div><span>T</span></div>
+          <div class="bar-col"><div class="bar" style="height:45%"></div><span>W</span></div>
+          <div class="bar-col"><div class="bar" style="height:71%"></div><span>T</span></div>
+          <div class="bar-col"><div class="bar" style="height:90%"></div><span>F</span></div>
+          <div class="bar-col"><div class="bar" style="height:58%"></div><span>S</span></div>
+          <div class="bar-col"><div class="bar" style="height:100%"></div><span>S</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="grid-stats">
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-icon stat-icon-accent"><i class="lucide lucide-zap"></i></div>
+          <span class="trend up"><i class="lucide lucide-trending-up"></i> +32</span>
+        </div>
+        <p class="stat-value">{{ user.connects_balance }}</p>
+        <p class="muted-sm">Connects Balance</p>
+      </div>
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-icon"><i class="lucide lucide-file-text"></i></div>
+          <span class="trend up"><i class="lucide lucide-trending-up"></i> +12.4%</span>
+        </div>
+        <p class="stat-value">{{ stats.files_converted }}</p>
+        <p class="muted-sm">Files Converted</p>
+      </div>
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-icon"><i class="lucide lucide-folder"></i></div>
+          <span class="trend up"><i class="lucide lucide-trending-up"></i> +3</span>
+        </div>
+        <p class="stat-value">{{ stats.templates_owned }}</p>
+        <p class="muted-sm">Templates Owned</p>
+      </div>
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-icon"><i class="lucide lucide-sparkles"></i></div>
+          <span class="trend down"><i class="lucide lucide-trending-down"></i> -4.1%</span>
+        </div>
+        <p class="stat-value">{{ stats.ai_generations }}</p>
+        <p class="muted-sm">AI Generations</p>
+      </div>
+    </section>
+
+    <!-- QUICK TOOLS -->
+    <section class="card section">
+      <div class="section-head">
+        <div>
+          <h2>Quick Tools</h2>
+          <p class="muted-sm">One-click access to your most used conversions</p>
+        </div>
+        <a href="{% url 'core_app:tool_pdf_to_word' %}" class="link">View all →</a>
+      </div>
+      <div class="tools-grid">
+        <a href="{% url 'core_app:tool_pdf_to_word' %}"><button class="tool"><span class="tag tag-red">PDF</span><span>PDF to Word</span></button></a>
+        <a href="{% url 'core_app:tool_word_to_pdf' %}"><button class="tool"><span class="tag tag-blue">DOC</span><span>Word to PDF</span></button></a>
+        <a href="{% url 'core_app:tool_excel_to_csv' %}"><button class="tool"><span class="tag tag-green">CSV</span><span>Excel to CSV</span></button></a>
+        <a href="#"><button class="tool"><span class="tag tag-purple">OCR</span><span>Image to Text</span></button></a>
+        <a href="#"><button class="tool"><span class="tag tag-orange">PDF</span><span>Merge PDF</span></button></a>
+        <a href="#"><button class="tool"><span class="tag tag-pink">ZIP</span><span>Compress</span></button></a>
+      </div>
+    </section>
+
+    <!-- TEMPLATES + TRANSACTIONS -->
+    <section class="grid-two">
+      <div class="card section">
+        <div class="section-head">
+          <div>
+            <h2>Your Templates</h2>
+            <p class="muted-sm">Premium designs you own</p>
+          </div>
+          <a href="{% url 'core_app:marketplace' %}"><button class="pill-btn">Browse Marketplace</button></a>
+        </div>
+        <div class="templates">
+          {% for product in purchased_products %}
+          <article class="template">
+            <div class="tpl-img tpl-grad-{{ forloop.counter }}">
+              <div class="tpl-overlay">
+                <span>{{ product.cost }} connects</span>
+                <a href="{% url 'core_app:product_detail' product.id %}"><button>View</button></a>
+              </div>
+            </div>
+            <div class="tpl-body"><span class="muted-tiny">{{ product.category.name|upper }}</span><h3>{{ product.title }}</h3></div>
+          </article>
+          {% empty %}
+          <p class="muted-sm">You haven't purchased any templates yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card section">
+        <div class="section-head">
+          <h2>Transactions</h2>
+          <div class="tabs">
+            <button class="tab active">All</button>
+            <button class="tab">In</button>
+            <button class="tab">Out</button>
+          </div>
+        </div>
+        <ul class="tx-list">
+          {% for tx in transactions %}
+          <li class="tx">
+            <div class="tx-left">
+              {% if tx.transaction_type == 'purchase_connects' %}
+              <div class="tx-icon in"><i class="lucide lucide-trending-up"></i></div>
+              {% else %}
+              <div class="tx-icon out"><i class="lucide lucide-trending-down"></i></div>
+              {% endif %}
+              <div>
+                  <p class="tx-type">{{ tx.get_transaction_type_display }}</p>
+                  <p class="muted-tiny">{% if tx.product %}{{ tx.product.title }} • {% endif %}{{ tx.timestamp|date:"M d, H:i" }}</p>
+              </div>
+            </div>
+            {% if tx.transaction_type == 'purchase_connects' %}
+            <span class="tx-amt in">+{{ tx.amount }}</span>
+            {% else %}
+            <span class="tx-amt out">-{{ tx.amount }}</span>
+            {% endif %}
+          </li>
+          {% empty %}
+          <li class="tx"><p class="muted-sm">No recent transactions.</p></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    <!-- RECENT FILES -->
+    <section class="card section">
+      <div class="section-head">
+        <div>
+          <h2>Recent Files</h2>
+          <p class="muted-sm">Your latest uploads & conversions</p>
+        </div>
+        <a href="{% url 'core_app:workspace' %}"><button class="navy-btn"><i class="lucide lucide-folder"></i> Go to Workspace</button></a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>File</th><th>Status</th><th>Date</th><th class="right">Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for f in recent_files %}
+            <tr>
+              <td><div class="file-cell"><div class="file-ico"><i class="lucide lucide-file-text"></i></div><span>{% if f.is_ai %}{{ f.original_name }}{% else %}{{ f.name }}{% endif %}</span></div></td>
+              <td>
+                {% if f.is_ai %}
+                <span class="status status-amber"><i class="lucide lucide-check-circle-2"></i> AI GENERATED</span>
+                {% elif f.conversion_type == 'uploaded' %}
+                <span class="status status-blue"><i class="lucide lucide-check-circle-2"></i> UPLOADED</span>
+                {% else %}
+                <span class="status status-green"><i class="lucide lucide-check-circle-2"></i> CONVERTED</span>
+                {% endif %}
+              </td>
+              <td class="muted-sm"><i class="lucide lucide-clock"></i> {{ f.created_at|date:"M d, H:i" }}</td>
+              <td>
+                <div class="actions">
+                  <a href="{% if f.is_ai %}{{ f.file.url }}{% else %}{{ f.file.url }}{% endif %}" class="act act-navy"><i class="lucide lucide-download"></i> Download</a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center; padding:20px;" class="muted-sm">No recent files</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="foot">© 2026 SkipStep · Built for productivity</footer>
+  </main>
+</div>
+{% endblock %}

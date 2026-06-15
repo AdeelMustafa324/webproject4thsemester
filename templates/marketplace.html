@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/marketplace.css">
+{% endblock %}
+
+{% block content %}
+<section class="container marketplace-header">
+    <h1>Marketplace</h1>
+    <p>Discover premium digital goods to supercharge your workflow.</p>
+</section>
+
+<section class="container marketplace-layout">
+    <aside class="filters-sidebar">
+        <h3>Categories</h3>
+        <ul class="category-list">
+            <li>
+                <a href="{% url 'core_app:marketplace' %}" class="{% if not current_category %}active{% endif %}">
+                    All Categories
+                </a>
+            </li>
+            {% for cat in categories %}
+            <li>
+                <a href="{% url 'core_app:marketplace' %}?category={{ cat.slug }}" class="{% if current_category == cat.slug %}active{% endif %}">
+                    {{ cat.name }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <section class="products-grid">
+        {% for product in products %}
+        <article class="product-card">
+            <section class="card-image-wrapper">
+                <img src="{% if product.thumbnail_url %}{{ product.thumbnail_url.url }}{% endif %}" alt="{{ product.title }}">
+                <section class="card-overlay">
+                    <span class="cost-badge">{{ product.cost }} Connects</span>
+                    <a href="{% url 'core_app:product_detail' product.id %}" class="btn-primary buy-btn">View Details</a>
+                </section>
+            </section>
+            <section class="card-content">
+                <span class="category-tag">{{ product.category.name }}</span>
+                <h3>{{ product.title }}</h3>
+            </section>
+        </article>
+        {% empty %}
+        <section class="empty-state">
+            <p>No products found in this category.</p>
+        </section>
+        {% endfor %}
+    </section>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/marketplace.js"></script>
+{% endblock %}

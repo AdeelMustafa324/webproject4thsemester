@@ -1,0 +1,198 @@
+.tools-page {
+    padding: 40px 0 80px;
+    min-height: calc(100vh - 200px);
+}
+
+.tools-layout {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+}
+
+.tools-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    padding: 24px 0;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 90px;
+    transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.tools-sidebar:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.sidebar-section {
+    padding: 0 16px;
+    margin-bottom: 24px;
+}
+
+.sidebar-section:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-text-light);
+    padding: 0 12px;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease, padding-left 0.25s ease;
+}
+
+.sidebar-link:hover {
+    background: var(--color-white-off);
+    color: var(--color-navy);
+    transform: translateX(4px);
+}
+
+.sidebar-link.active {
+    background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+    color: var(--color-gold);
+    box-shadow: 0 4px 12px rgba(10, 25, 47, 0.2);
+}
+
+.sidebar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+}
+
+.sidebar-link:hover .sidebar-icon,
+.sidebar-link.active .sidebar-icon {
+    transform: scale(1.1);
+}
+
+.sidebar-icon--pdf { background: rgba(231, 76, 60, 0.15); color: #c0392b; }
+.sidebar-icon--word { background: rgba(43, 87, 154, 0.15); color: var(--format-word); }
+.sidebar-icon--excel { background: rgba(33, 115, 70, 0.15); color: var(--format-excel); }
+.sidebar-icon--files { background: rgba(212, 175, 55, 0.15); color: var(--color-gold); font-size: 1rem; }
+.sidebar-icon--shop { background: rgba(10, 25, 47, 0.1); color: var(--color-navy); font-size: 1rem; }
+
+.tools-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.page-transition {
+    animation: pageFadeIn 0.45s ease forwards;
+}
+
+/* Marketplace sidebar extensions */
+.marketplace-sidebar .price-filter {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 2px solid var(--color-white-off);
+}
+
+.price-filter label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+}
+
+.price-value {
+    color: var(--color-gold);
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+}
+
+.price-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, var(--color-gold) 0%, #e0e0e0 0%);
+    border-radius: 3px;
+    outline: none;
+    transition: background 0.15s ease;
+}
+
+.price-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-gold);
+    cursor: pointer;
+    box-shadow: 0 2px 8px var(--color-gold-glow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.price-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 14px var(--color-gold-glow);
+}
+
+.price-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-gold);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px var(--color-gold-glow);
+}
+
+.price-range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+}
+
+@media (max-width: 900px) {
+    .tools-layout {
+        flex-direction: column;
+    }
+
+    .tools-sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .sidebar-link {
+        flex: 1;
+        min-width: 140px;
+        justify-content: center;
+    }
+}

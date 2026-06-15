@@ -1,0 +1,44 @@
+<aside class="tools-sidebar reveal">
+    <div class="sidebar-section">
+        <h3 class="sidebar-heading">Conversion Tools</h3>
+        <nav class="sidebar-nav">
+            <a href="{% url 'core_app:tool_pdf_to_word' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'tool_pdf_to_word' %}active{% endif %}">
+                <span class="sidebar-icon sidebar-icon--pdf">PDF</span>
+                <span>PDF to Word</span>
+            </a>
+            <a href="{% url 'core_app:tool_word_to_pdf' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'tool_word_to_pdf' %}active{% endif %}">
+                <span class="sidebar-icon sidebar-icon--word">DOC</span>
+                <span>Word to PDF</span>
+            </a>
+            <a href="{% url 'core_app:tool_excel_to_csv' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'tool_excel_to_csv' %}active{% endif %}">
+                <span class="sidebar-icon sidebar-icon--excel">CSV</span>
+                <span>Excel / Numbers to CSV</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="sidebar-section">
+        <h3 class="sidebar-heading">Workspace</h3>
+        <nav class="sidebar-nav">
+            <a href="{% url 'core_app:workspace' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'workspace' %}active{% endif %}">
+                <span class="sidebar-icon sidebar-icon--files">&#128193;</span>
+                <span>My Files</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="sidebar-section">
+        <h3 class="sidebar-heading">Marketplace</h3>
+        <nav class="sidebar-nav">
+            <a href="{% url 'core_app:marketplace' %}"
+               class="sidebar-link {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
+                <span class="sidebar-icon sidebar-icon--shop">&#9733;</span>
+                <span>Browse Products</span>
+            </a>
+        </nav>
+    </div>
+</aside>

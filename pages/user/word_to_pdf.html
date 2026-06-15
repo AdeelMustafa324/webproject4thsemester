@@ -1,0 +1,35 @@
+{% extends 'user/tools_base.html' %}
+{% load static %}
+
+{% block title %}Word to PDF{% endblock %}
+
+{% block tool_content %}
+<div class="tool-panel reveal">
+    <div class="tool-header">
+        <span class="tool-badge tool-badge--word">DOCX</span>
+        <span class="tool-arrow">→</span>
+        <span class="tool-badge tool-badge--pdf">PDF</span>
+    </div>
+    <h1>{{ tool_title }}</h1>
+    <p>Convert Word documents to PDF format for sharing and printing.</p>
+
+    <form class="tool-form" data-type="{{ tool_type }}" data-accept="{{ accept }}" data-hint="{{ hint }}">
+        {% csrf_token %}
+        <div class="file-drop-area tool-drop" id="toolDropArea">
+            <div class="drop-icon">&#128196;</div>
+            <span class="drop-msg" id="toolDropMsg">Drag & drop your file here, or click to browse</span>
+            <span class="drop-hint" id="toolDropHint">{{ hint }}</span>
+            <input type="file" class="file-input tool-file-input" accept="{{ accept }}" required>
+        </div>
+        <button type="submit" class="btn-primary w-100 tool-submit">Convert to PDF</button>
+    </form>
+
+    <div class="tool-result hidden" id="toolResult">
+        <p id="toolResultMsg"></p>
+        <div class="tool-result-actions">
+            <a href="#" id="toolDownloadLink" class="btn-primary hidden" target="_blank">Download</a>
+            <a href="{% url 'core_app:workspace' %}" class="btn-secondary">View in Workspace</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

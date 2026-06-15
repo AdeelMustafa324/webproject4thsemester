@@ -1,0 +1,103 @@
+/* Product Detail CSS */
+.product-detail-section {
+    display: flex;
+    gap: 50px;
+    padding: 60px 20px;
+}
+
+.product-images {
+    flex: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+.product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-tag {
+    color: var(--color-text-light);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.product-info h1 {
+    font-size: 2.5rem;
+    color: var(--color-navy);
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.cost {
+    font-size: 1.5rem;
+    color: var(--color-gold);
+    font-weight: 800;
+    margin-bottom: 30px;
+}
+
+.description {
+    margin-bottom: 40px;
+    color: var(--color-text);
+}
+
+.description h3 {
+    color: var(--color-navy);
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.action-section {
+    margin-top: auto;
+    padding-top: 30px;
+    border-top: 1px solid var(--color-white-off);
+}
+
+.action-section .alert {
+    margin-bottom: 20px;
+}
+
+.btn-secondary {
+    display: inline-block;
+    background-color: var(--color-white-off);
+    color: var(--color-navy);
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid var(--color-navy-light);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-left: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-navy-light);
+    color: var(--color-white);
+    transform: translateY(-2px);
+}
+
+.buy-btn {
+    width: 100%;
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 15px;
+}
+
+@media (max-width: 768px) {
+    .product-detail-section {
+        flex-direction: column;
+    }
+}

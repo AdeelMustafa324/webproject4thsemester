@@ -1,0 +1,21 @@
+.connects-pill {
+    background: rgba(212, 175, 55, 0.15);
+    color: var(--color-gold);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.staff-badge {
+    background: var(--color-navy);
+    color: var(--color-gold);
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.page-desc {
+    color: var(--color-text-light);
+}

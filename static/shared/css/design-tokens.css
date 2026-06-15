@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --color-navy: #0A192F;
+    --color-navy-light: #112240;
+    --color-navy-dark: #050d1a;
+    --color-white: #FFFFFF;
+    --color-white-off: #F8F9FA;
+    --color-gold: #D4AF37;
+    --color-gold-hover: #F1C40F;
+    --color-gold-glow: rgba(212, 175, 55, 0.35);
+    --color-text: #333333;
+    --color-text-light: #8892B0;
+    --color-success: #2ecc71;
+    --color-danger: #e74c3c;
+
+    --format-excel: #217346;
+    --format-powerpoint: #D24726;
+    --format-word: #2B579A;
+    --format-canva: #00C4CC;
+
+    --font-family: 'Outfit', sans-serif;
+    --container-max: 1200px;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.15);
+    --transition: 0.3s ease;
+    --glass-bg: rgba(10, 25, 47, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--color-white-off);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--transition);
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.page-enter {
+    animation: pageFadeIn 0.5s ease forwards;
+}

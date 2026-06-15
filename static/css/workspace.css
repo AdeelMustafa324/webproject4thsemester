@@ -1,0 +1,197 @@
+/* Workspace CSS */
+.workspace-header {
+    text-align: center;
+    padding: 60px 0 40px;
+}
+
+.workspace-header h1 {
+    font-size: 3rem;
+    color: var(--color-navy);
+    margin-bottom: 10px;
+}
+
+.workspace-layout {
+    display: flex;
+    gap: 40px;
+    padding-bottom: 80px;
+}
+
+.workspace-panel {
+    background: var(--color-white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    flex: 1;
+}
+
+.workspace-panel h2 {
+    color: var(--color-navy);
+    margin-bottom: 10px;
+}
+
+.workspace-panel > p {
+    color: var(--color-text-light);
+    margin-bottom: 30px;
+}
+
+.badge {
+    background: var(--color-gold);
+    color: var(--color-navy);
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.file-drop-area {
+    border: 2px dashed var(--color-navy-light);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    background: var(--color-white-off);
+    transition: background 0.3s;
+}
+
+.file-drop-area:hover, .file-drop-area.dragover {
+    background: #e9ecef;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.drop-msg {
+    font-weight: 600;
+    color: var(--color-navy);
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+.converter-result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+    background: var(--color-white-off);
+    text-align: center;
+}
+
+#converterMsg {
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Editor Styles */
+.editor-formats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.format-btn {
+    background: var(--color-white-off);
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.format-btn:hover, .format-btn.active {
+    background: var(--color-navy-light);
+    color: var(--color-white);
+    border-color: var(--color-navy-light);
+}
+
+.editor-container {
+    height: 400px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fdfdfd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.editor-placeholder {
+    color: var(--color-text-light);
+    text-align: center;
+}
+
+/* API simulated iframe */
+.mock-editor {
+    width: 100%;
+    height: 100%;
+    background: #f4f5f7;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.mock-toolbar {
+    height: 50px;
+    background: var(--color-navy);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    font-weight: 600;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.mock-canvas {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mock-document {
+    background: var(--color-white);
+    width: 80%;
+    height: 90%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+@media (max-width: 768px) {
+    .workspace-layout {
+        flex-direction: column;
+    }
+}

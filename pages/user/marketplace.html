@@ -1,0 +1,100 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Marketplace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user/css/sidebar.css' %}">
+<link rel="stylesheet" href="{% static 'user/css/marketplace.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="marketplace-hero">
+    <div class="container marketplace-hero-inner reveal">
+        <h1>Marketplace</h1>
+        <p>Discover premium digital products to supercharge your workflow.</p>
+        <div class="search-bar">
+            <input type="search" id="productSearch" placeholder="Search products..." aria-label="Search products">
+            <button type="button" class="search-btn" aria-label="Search">&#128269;</button>
+        </div>
+    </div>
+</section>
+
+<section class="container marketplace-layout">
+    <aside class="tools-sidebar marketplace-sidebar reveal">
+        <div class="sidebar-section">
+            <h3 class="sidebar-heading">Conversion Tools</h3>
+            <nav class="sidebar-nav">
+                <a href="{% url 'core_app:tool_pdf_to_word' %}" class="sidebar-link">
+                    <span class="sidebar-icon sidebar-icon--pdf">PDF</span>
+                    <span>PDF to Word</span>
+                </a>
+                <a href="{% url 'core_app:tool_word_to_pdf' %}" class="sidebar-link">
+                    <span class="sidebar-icon sidebar-icon--word">DOC</span>
+                    <span>Word to PDF</span>
+                </a>
+                <a href="{% url 'core_app:tool_excel_to_csv' %}" class="sidebar-link">
+                    <span class="sidebar-icon sidebar-icon--excel">CSV</span>
+                    <span>Excel / Numbers to CSV</span>
+                </a>
+                <a href="{% url 'core_app:workspace' %}" class="sidebar-link">
+                    <span class="sidebar-icon sidebar-icon--files">&#128193;</span>
+                    <span>My Files</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-section">
+            <h3 class="sidebar-heading">Categories</h3>
+            <nav class="sidebar-nav category-nav">
+                <a href="{% url 'core_app:marketplace' %}" class="sidebar-link {% if not current_category %}active{% endif %}">All Categories</a>
+                {% for cat in categories %}
+                <a href="{% url 'core_app:marketplace' %}?category={{ cat.slug }}"
+                   class="sidebar-link {% if current_category == cat.slug %}active{% endif %}">{{ cat.name }}</a>
+                {% endfor %}
+            </nav>
+        </div>
+
+        <div class="sidebar-section price-filter">
+            <label for="priceSlider">
+                Max Price
+                <span class="price-value" id="priceValue">{{ max_cost }}</span>
+                <span style="font-size:0.8rem;color:var(--color-text-light)">Connects</span>
+            </label>
+            <input type="range" id="priceSlider" class="price-slider" min="0" max="{{ max_cost }}" value="{{ max_cost }}" step="10">
+            <div class="price-range-labels">
+                <span>0</span>
+                <span>{{ max_cost }}+</span>
+            </div>
+        </div>
+    </aside>
+
+    <div class="products-grid reveal-stagger" id="productsGrid">
+        {% for product in products %}
+        <article class="product-card" data-title="{{ product.title|lower }}" data-cost="{{ product.cost }}">
+            <div class="card-image-wrapper">
+                {% if product.thumbnail_url %}
+                <img src="{{ product.thumbnail_url.url }}" alt="{{ product.title }}">
+                {% else %}
+                <div class="card-placeholder"></div>
+                {% endif %}
+                <div class="card-overlay">
+                    <span class="cost-badge">{{ product.cost }} Connects</span>
+                    <a href="{% url 'core_app:product_detail' product.id %}" class="btn-primary buy-btn">View Details</a>
+                </div>
+            </div>
+            <div class="card-content">
+                <span class="category-tag">{{ product.category.name }}</span>
+                <h3>{{ product.title }}</h3>
+            </div>
+        </article>
+        {% empty %}
+        <div class="empty-state">No products found in this category.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/marketplace.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,131 @@
+.auth-page {
+    min-height: 100vh;
+    background: var(--color-white-off);
+}
+
+.auth-split {
+    display: flex;
+    min-height: 100vh;
+}
+
+.auth-visual {
+    flex: 1;
+    background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-light) 100%);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-visual-content {
+    position: relative;
+    z-index: 2;
+    max-width: 400px;
+}
+
+.auth-logo {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-gold);
+    display: block;
+    margin-bottom: 40px;
+}
+
+.auth-visual h1 {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+}
+
+.auth-visual p {
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.7;
+}
+
+.auth-format-icons {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+.format-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+}
+
+.format-dot--excel { background: var(--format-excel); }
+.format-dot--ppt { background: var(--format-powerpoint); }
+.format-dot--word { background: var(--format-word); }
+.format-dot--canva { background: var(--format-canva); }
+
+.auth-form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.auth-form-inner {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-form-inner h2 {
+    color: var(--color-navy);
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.auth-sub {
+    color: var(--color-text-light);
+    margin-bottom: 28px;
+}
+
+.auth-form {
+    margin-bottom: 24px;
+}
+
+.auth-switch {
+    text-align: center;
+    color: var(--color-text-light);
+    margin-bottom: 16px;
+}
+
+.auth-switch a {
+    color: var(--color-gold);
+    font-weight: 700;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+.auth-back {
+    display: block;
+    text-align: center;
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+}
+
+.auth-back:hover {
+    color: var(--color-navy);
+}
+
+@media (max-width: 768px) {
+    .auth-split {
+        flex-direction: column;
+    }
+
+    .auth-visual {
+        padding: 40px 24px;
+        min-height: 280px;
+    }
+
+    .auth-visual h1 {
+        font-size: 1.8rem;
+    }
+}

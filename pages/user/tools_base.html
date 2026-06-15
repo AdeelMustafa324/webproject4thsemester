@@ -1,0 +1,24 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user/css/sidebar.css' %}">
+<link rel="stylesheet" href="{% static 'user/css/tools.css' %}">
+{% block tool_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<section class="tools-page">
+    <div class="container tools-layout">
+        {% include 'user/includes/tools_sidebar.html' %}
+        <div class="tools-main page-transition">
+            {% block tool_content %}{% endblock %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/tools.js' %}"></script>
+{% block tool_js %}{% endblock %}
+{% endblock %}

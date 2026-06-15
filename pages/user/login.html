@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — SkipStep</title>
+    <link rel="stylesheet" href="{% static 'shared/css/design-tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'shared/css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'shared/css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'user/css/login.css' %}">
+</head>
+<body class="auth-page page-enter">
+    <div class="auth-split">
+        <div class="auth-visual">
+            <div class="auth-visual-content">
+                <a href="{% url 'core_app:home' %}" class="auth-logo">SkipStep</a>
+                <h1>Welcome Back</h1>
+                <p>Access your purchased products, workspace tools, and Connects balance.</p>
+                <div class="auth-format-icons">
+                    <span class="format-dot format-dot--excel"></span>
+                    <span class="format-dot format-dot--ppt"></span>
+                    <span class="format-dot format-dot--word"></span>
+                    <span class="format-dot format-dot--canva"></span>
+                </div>
+            </div>
+            <div class="hero-blob hero-blob--1"></div>
+            <div class="hero-blob hero-blob--2"></div>
+        </div>
+
+        <div class="auth-form-panel">
+            <div class="auth-form-inner reveal">
+                <h2>Sign In</h2>
+                <p class="auth-sub">Enter your credentials to continue</p>
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn-primary w-100">Sign In</button>
+                </form>
+
+                <p class="auth-switch">Don't have an account? <a href="{% url 'core_app:register' %}">Create one</a></p>
+                <a href="{% url 'core_app:home' %}" class="auth-back">&larr; Back to home</a>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'user/js/login.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+/* User panel base layout */
+.site-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--color-white);
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--glass-border);
+    transition: padding var(--transition), box-shadow var(--transition);
+}
+
+.site-header.scrolled {
+    padding: 10px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-gold);
+    letter-spacing: 1px;
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.main-nav a {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-white);
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+    color: var(--color-gold);
+}
+
+.connects-btn {
+    background: linear-gradient(135deg, var(--color-gold), var(--color-gold-hover));
+    color: var(--color-navy) !important;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-weight: 800;
+}
+
+.connects-btn:hover {
+    transform: scale(1.05);
+    color: var(--color-navy) !important;
+}
+
+.btn-nav-register {
+    background: transparent;
+    border: 2px solid var(--color-gold);
+    color: var(--color-gold) !important;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+
+.btn-nav-register:hover {
+    background: var(--color-gold);
+    color: var(--color-navy) !important;
+}
+
+.logout-form {
+    display: inline;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color var(--transition);
+}
+
+.logout-btn:hover {
+    color: var(--color-gold);
+}
+
+.site-footer {
+    background: var(--color-navy);
+    color: var(--color-text-light);
+    padding: 50px 0 30px;
+    margin-top: 80px;
+}
+
+.footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+}
+
+.footer-brand .logo {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 24px;
+}
+
+.footer-links a:hover {
+    color: var(--color-gold);
+}
+
+.footer-copy {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .main-nav ul {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .main-nav a {
+        font-size: 0.9rem;
+    }
+}

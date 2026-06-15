@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/home.css">
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <section class="container hero-content">
+        <h1>Accelerate Your Workflow with Premium Templates</h1>
+        <p>SkipStep is your definitive digital goods marketplace and productivity workspace. Buy templates with Connects, edit them live, and convert documents instantly.</p>
+        <a href="{% url 'core_app:marketplace' %}" class="btn-primary hero-btn">Explore Marketplace</a>
+    </section>
+</section>
+
+<section class="container featured-section">
+    <h2>Featured Templates</h2>
+    <section class="carousel-container">
+        <button class="carousel-btn prev-btn" id="prevBtn">&#10094;</button>
+        <section class="carousel-track-wrapper">
+            <ul class="carousel-track" id="carouselTrack">
+                {% for product in featured_products %}
+                <li class="carousel-slide">
+                    <article class="product-card">
+                        <section class="card-image-wrapper">
+                            <img src="{% if product.thumbnail_url %}{{ product.thumbnail_url.url }}{% endif %}" alt="{{ product.title }}">
+                            <section class="card-overlay">
+                                <span class="cost-badge">{{ product.cost }} Connects</span>
+                                <a href="{% url 'core_app:product_detail' product.id %}" class="btn-primary buy-btn">View Details</a>
+                            </section>
+                        </section>
+                        <section class="card-content">
+                            <span class="category-tag">{{ product.category.name }}</span>
+                            <h3>{{ product.title }}</h3>
+                        </section>
+                    </article>
+                </li>
+                {% empty %}
+                <li class="empty-state">No templates available yet.</li>
+                {% endfor %}
+            </ul>
+        </section>
+        <button class="carousel-btn next-btn" id="nextBtn">&#10095;</button>
+    </section>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/home.js"></script>
+{% endblock %}

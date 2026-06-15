@@ -1,0 +1,52 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Store{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user/css/store.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="store-hero reveal">
+    <div class="container">
+        <h1>Connects Store</h1>
+        <p>Purchase Connects to unlock premium products in the marketplace.</p>
+    </div>
+</section>
+
+<!-- INTEGRATION: payment-api-zone — Stripe / PayPal Connects purchase -->
+<section class="container pricing-table reveal-stagger" id="payment-api-zone">
+    <form method="post" class="pricing-card">
+        {% csrf_token %}
+        <input type="hidden" name="package" value="basic">
+        <h3>Basic</h3>
+        <p class="price">$10</p>
+        <p class="connects">100 Connects</p>
+        <button type="submit" class="btn-primary buy-btn w-100">Purchase</button>
+    </form>
+
+    <form method="post" class="pricing-card featured">
+        {% csrf_token %}
+        <input type="hidden" name="package" value="pro">
+        <span class="ribbon">Popular</span>
+        <h3>Pro</h3>
+        <p class="price">$40</p>
+        <p class="connects">500 Connects</p>
+        <button type="submit" class="btn-primary buy-btn w-100">Purchase</button>
+    </form>
+
+    <form method="post" class="pricing-card">
+        {% csrf_token %}
+        <input type="hidden" name="package" value="enterprise">
+        <h3>Enterprise</h3>
+        <p class="price">$120</p>
+        <p class="connects">2000 Connects</p>
+        <button type="submit" class="btn-primary buy-btn w-100">Purchase</button>
+    </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/store.js' %}"></script>
+{% endblock %}

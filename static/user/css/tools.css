@@ -1,0 +1,117 @@
+.tool-panel {
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    padding: 40px;
+    box-shadow: var(--shadow-md);
+    max-width: 640px;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.tool-panel:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.tool-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.tool-badge {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.tool-badge--pdf { background: rgba(231, 76, 60, 0.12); color: #c0392b; }
+.tool-badge--word { background: rgba(43, 87, 154, 0.12); color: var(--format-word); }
+.tool-badge--excel { background: rgba(33, 115, 70, 0.12); color: var(--format-excel); }
+.tool-badge--csv { background: rgba(0, 150, 136, 0.12); color: #00897b; }
+
+.tool-arrow {
+    color: var(--color-gold);
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.tool-panel h1 {
+    color: var(--color-navy);
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+.tool-panel > p {
+    color: var(--color-text-light);
+    margin-bottom: 28px;
+}
+
+.tool-drop {
+    border: 2px dashed #ccd3de;
+    border-radius: var(--radius-md);
+    padding: 48px 24px;
+    text-align: center;
+    position: relative;
+    background: var(--color-white-off);
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+}
+
+.tool-drop:hover,
+.tool-drop.dragover {
+    border-color: var(--color-gold);
+    background: rgba(212, 175, 55, 0.05);
+    transform: scale(1.01);
+}
+
+.tool-drop .drop-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    opacity: 0.6;
+}
+
+.tool-drop .drop-msg {
+    display: block;
+    font-weight: 600;
+    color: var(--color-navy);
+    margin-bottom: 6px;
+}
+
+.tool-drop .drop-hint {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+}
+
+.tool-submit {
+    padding: 14px;
+    font-size: 1rem;
+}
+
+.tool-result {
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    animation: fadeUp 0.4s ease forwards;
+}
+
+.tool-result p {
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.tool-result-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .tool-panel {
+        padding: 28px 20px;
+    }
+}

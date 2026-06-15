@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/store.css">
+{% endblock %}
+
+{% block content %}
+<section class="container store-header">
+    <h1>Buy Connects</h1>
+    <p>Fuel your productivity by purchasing Connects to download premium templates.</p>
+</section>
+
+<section class="container pricing-table">
+    <article class="pricing-card">
+        <h3>Basic</h3>
+        <p class="price">$10</p>
+        <p class="connects">100 Connects</p>
+        <form action="{% url 'core_app:store' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="package" value="basic">
+            <button type="submit" class="btn-primary buy-btn">Purchase</button>
+        </form>
+    </article>
+    
+    <article class="pricing-card featured">
+        <div class="ribbon">Best Value</div>
+        <h3>Pro</h3>
+        <p class="price">$40</p>
+        <p class="connects">500 Connects</p>
+        <form action="{% url 'core_app:store' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="package" value="pro">
+            <button type="submit" class="btn-primary buy-btn">Purchase</button>
+        </form>
+    </article>
+    
+    <article class="pricing-card">
+        <h3>Enterprise</h3>
+        <p class="price">$120</p>
+        <p class="connects">2000 Connects</p>
+        <form action="{% url 'core_app:store' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="package" value="enterprise">
+            <button type="submit" class="btn-primary buy-btn">Purchase</button>
+        </form>
+    </article>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/store.js"></script>
+{% endblock %}

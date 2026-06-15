@@ -1,0 +1,269 @@
+{% extends 'user/tools_base.html' %}
+{% load static %}
+
+{% block title %}Sheet Editor — {{ filename }}{% endblock %}
+
+{% block tool_css %}
+<link rel="stylesheet" href="{% static 'user/css/workspace.css' %}">
+<!-- Handsontable CE -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.css">
+<style>
+    .sheet-editor-panel {
+        background: var(--color-white);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 200px);
+        min-height: 500px;
+    }
+
+    .sheet-editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .sheet-editor-header h1 {
+        color: var(--color-navy);
+        font-size: 1.4rem;
+        margin: 0;
+    }
+
+    .sheet-editor-header .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    /* AI Instruction Bar */
+    .ai-instruction-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+        align-items: center;
+    }
+
+    .ai-instruction-bar input {
+        flex: 1;
+        padding: 12px 18px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .ai-instruction-bar input:focus {
+        border-color: var(--color-gold);
+    }
+
+    .ai-instruction-bar button {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-hover) 100%);
+        color: var(--color-navy);
+        border: none;
+        border-radius: 12px;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+    }
+
+    .ai-instruction-bar button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px var(--color-gold-glow);
+    }
+
+    .ai-instruction-bar button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Grid container */
+    .sheet-grid-container {
+        flex: 1;
+        border: 1px solid #e0e0e0;
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+        overflow: hidden;
+    }
+
+    /* Toolbar */
+    .sheet-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-bottom: none;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border-right: 1px solid #dcdcdc;
+        padding-right: 8px;
+    }
+    .toolbar-group:last-child {
+        border-right: none;
+    }
+
+    .toolbar-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        padding: 6px;
+        cursor: pointer;
+        color: #444;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        min-width: 32px;
+        height: 32px;
+    }
+
+    .toolbar-btn:hover {
+        background: #e9ecef;
+    }
+
+    .toolbar-btn.active {
+        background: #e2e6ea;
+        border-color: #d3d9df;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .toolbar-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .toolbar-select {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 13px;
+        background: white;
+        cursor: pointer;
+        height: 28px;
+    }
+    
+    .toolbar-color {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    /* AI response / status bar */
+    .ai-sheet-status {
+        margin-top: 12px;
+        padding: 10px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 0.88rem;
+        min-height: 20px;
+        transition: all 0.3s;
+    }
+
+    .ai-sheet-status.success {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .ai-sheet-status.error {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+
+    .ai-sheet-status.loading {
+        background: rgba(25, 118, 210, 0.1);
+        color: #1976d2;
+        border: 1px solid rgba(25, 118, 210, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block tool_content %}
+<div class="sheet-editor-panel reveal">
+    <div class="sheet-editor-header">
+        <h1>📊 {{ filename }}</h1>
+        <div class="header-actions">
+            <button type="button" class="btn-primary" id="sheetSaveBtn">💾 Save to File</button>
+            <a href="{% url 'core_app:workspace' %}" class="btn-secondary">← Back to Workspace</a>
+        </div>
+    </div>
+
+    <div class="ai-instruction-bar">
+        <input type="text" id="aiSheetPrompt" placeholder="Ask AI to modify your sheet... (e.g., 'Add a total row', 'Sort by date')" />
+        <button type="button" id="aiSheetSendBtn">✨ Ask AI</button>
+    </div>
+
+    <div class="sheet-toolbar" id="sheetToolbar">
+        <div class="toolbar-group">
+            <button type="button" class="toolbar-btn" id="btnUndo" title="Undo (Ctrl+Z)">↩</button>
+            <button type="button" class="toolbar-btn" id="btnRedo" title="Redo (Ctrl+Y)">↪</button>
+        </div>
+        <div class="toolbar-group">
+            <select class="toolbar-select" id="selFontFamily" title="Font">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Courier New', Courier, monospace">Courier New</option>
+                <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS</option>
+                <option value="'Inter', sans-serif">Inter</option>
+            </select>
+            <select class="toolbar-select" id="selFontSize" title="Font Size">
+                <option value="10px">10</option>
+                <option value="11px">11</option>
+                <option value="12px" selected>12</option>
+                <option value="14px">14</option>
+                <option value="16px">16</option>
+                <option value="18px">18</option>
+                <option value="24px">24</option>
+            </select>
+        </div>
+        <div class="toolbar-group">
+            <button type="button" class="toolbar-btn" id="btnBold" title="Bold (Ctrl+B)"><b>B</b></button>
+            <button type="button" class="toolbar-btn" id="btnItalic" title="Italic (Ctrl+I)"><i>I</i></button>
+            <button type="button" class="toolbar-btn" id="btnUnderline" title="Underline (Ctrl+U)"><u>U</u></button>
+        </div>
+        <div class="toolbar-group">
+            <input type="color" class="toolbar-color" id="colorText" value="#000000" title="Text Color">
+            <input type="color" class="toolbar-color" id="colorBg" value="#ffffff" title="Background Color">
+        </div>
+        <div class="toolbar-group">
+            <button type="button" class="toolbar-btn" id="btnAlignLeft" title="Align Left">⇤</button>
+            <button type="button" class="toolbar-btn" id="btnAlignCenter" title="Align Center">⇥⇤</button>
+            <button type="button" class="toolbar-btn" id="btnAlignRight" title="Align Right">⇥</button>
+        </div>
+    </div>
+    <div class="sheet-grid-container" id="sheetGrid"></div>
+
+    <div class="ai-sheet-status" id="aiSheetStatus"></div>
+</div>
+
+<!-- Pass filename to JS -->
+<script>window.__SHEET_FILENAME__ = "{{ filename|escapejs }}";</script>
+{% endblock %}
+
+{% block tool_js %}
+<!-- Handsontable CE -->
+<script src="https://cdn.jsdelivr.net/npm/handsontable@14.6.1/dist/handsontable.full.min.js"></script>
+<script src="{% static 'user/js/sheet_editor.js' %}?v=2"></script>
+{% endblock %}

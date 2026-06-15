@@ -1,0 +1,46 @@
+{% extends 'manage/base.html' %}
+{% load static %}
+
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'manage/css/users.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row reveal">
+    <p class="page-desc">{{ users|length }} registered users</p>
+</div>
+
+<div class="data-table-wrap reveal">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Connects</th>
+                <th>Staff</th>
+                <th>Joined</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.email|default:"—" }}</td>
+                <td><span class="connects-pill">{{ u.connects_balance }}</span></td>
+                <td>{% if u.is_staff %}<span class="staff-badge">Staff</span>{% else %}—{% endif %}</td>
+                <td>{{ u.date_joined|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="empty-state">No users yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'manage/js/users.js' %}"></script>
+{% endblock %}

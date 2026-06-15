@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/product_detail.css">
+{% endblock %}
+
+{% block content %}
+<section class="container product-detail-section">
+    <section class="product-images">
+        <img src="{% if product.thumbnail_url %}{{ product.thumbnail_url.url }}{% endif %}" alt="{{ product.title }}" class="main-image">
+    </section>
+    
+    <section class="product-info">
+        <span class="category-tag">{{ product.category.name }}</span>
+        <h1>{{ product.title }}</h1>
+        <p class="cost">{{ product.cost }} Connects</p>
+        
+        <section class="description">
+            <h3>Description</h3>
+            <p>{{ product.description }}</p>
+        </section>
+
+        <section class="action-section">
+            {% if has_purchased %}
+                <section class="alert success">You own this template!</section>
+                <a href="{% url 'core_app:workspace' %}" class="btn-primary">Open in Workspace</a>
+                {% if product.file_url %}
+                    <a href="{% if product.file_url %}{{ product.file_url.url }}{% endif %}" target="_blank" class="btn-secondary">Download Link</a>
+                {% endif %}
+            {% else %}
+                <form action="{% url 'core_app:product_detail' product.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-primary buy-btn">Buy with Connects</button>
+                </form>
+            {% endif %}
+        </section>
+    </section>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/product_detail.js"></script>
+{% endblock %}
