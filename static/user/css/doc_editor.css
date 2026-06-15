@@ -1,0 +1,202 @@
+/* Reset and Base Layout */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* We manage scrolling internally */
+    background: #f4f5f7;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.doc-editor-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Header */
+.doc-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    z-index: 10;
+}
+
+.doc-editor-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f0f2f5;
+    color: #333;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: background 0.2s ease;
+}
+
+.btn-back:hover {
+    background: #e4e6eb;
+}
+
+.doc-file-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.doc-filename {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+}
+
+.doc-status {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+.doc-editor-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* AI Buttons */
+.btn-ai-tool {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border: 1px solid #dcdcdc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-ai-tool:hover {
+    background: linear-gradient(135deg, #fff 0%, #f4f4f4 100%);
+    border-color: #b0b0b0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.ai-sparkle {
+    color: #d4af37; /* Gold */
+}
+
+/* Save Button */
+.btn-save-doc {
+    background: #0a192f; /* Navy */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-save-doc:hover {
+    background: #112240;
+}
+
+/* Ribbon Toolbar */
+.doc-editor-ribbon {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    padding: 5px 0;
+    z-index: 9;
+}
+
+/* Make CKEditor toolbar blend into our ribbon */
+.doc-editor-ribbon .ck-toolbar {
+    border: none !important;
+    background: transparent !important;
+}
+
+/* Main Canvas Area */
+.doc-editor-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.doc-editor-canvas-wrapper {
+    /* Standard A4 aspect ratio & width */
+    width: 21cm;
+    min-height: 29.7cm;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    margin-bottom: 40px;
+}
+
+.doc-editor-canvas {
+    padding: 2.54cm; /* Standard 1 inch margins */
+    min-height: 100%;
+    outline: none;
+}
+
+.doc-editor-canvas .loader {
+    text-align: center;
+    color: #888;
+    margin-top: 50px;
+}
+
+/* CKEditor inner overrides */
+.ck-editor__editable {
+    min-height: 100%;
+    font-size: 11pt; /* Word default usually 11pt or 12pt */
+    font-family: 'Calibri', 'Arial', sans-serif;
+    line-height: 1.5;
+}
+
+/* AI Modals / Popups (To be handled by JS) */
+.ai-overlay {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    width: 350px;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+    display: none;
+    flex-direction: column;
+}
+
+.ai-overlay-header {
+    background: #0a192f;
+    color: white;
+    padding: 10px 15px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}

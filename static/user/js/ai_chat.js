@@ -221,6 +221,7 @@
         try {
             const payload = { message: text };
             if (currentSessionId) payload.session_id = currentSessionId;
+            if (window.SKIPSTEP_ACTIVE_FILE) payload.active_file = window.SKIPSTEP_ACTIVE_FILE;
 
             const res = await fetch('/ai/api/chat/', {
                 method: 'POST',

@@ -436,6 +436,63 @@ def delete_workspace_file(request, file_id):
 
 
 @login_required
+def doc_editor_view(request, file_id):
+    if str(file_id).startswith('ai_'):
+        filename = str(file_id)[3:]
+    else:
+        try:
+            int_id = int(file_id)
+            files = _get_workspace_files(request)
+            ws_file = get_object_or_404(files, id=int_id)
+            filename = ws_file.original_name
+        except ValueError:
+            return HttpResponse("Invalid file ID", status=400)
+    
+    return render(request, 'user/doc_editor.html', {
+        'file_id': file_id,
+        'filename': filename
+    })
+
+
+def _convert_doc_to_docx_win32(file_path):
+    import os
+    if not file_path.lower().endswith('.doc'):
+        return file_path
+    
+    new_path = file_path + 'x'
+    if os.path.exists(new_path):
+        return new_path
+        
+    try:
+        import win32com.client as win32
+        import pythoncom
+        pythoncom.CoInitialize()
+        word = win32.DispatchEx('Word.Application')
+        word.Visible = False
+        doc = word.Documents.Open(os.path.abspath(file_path))
+        doc.SaveAs(os.path.abspath(new_path), FileFormat=16) # 16 = docx
+        try:
+            doc.Close()
+        except:
+            pass
+            
+        try:
+            word.Quit()
+        except:
+            pass
+            
+        pythoncom.CoUninitialize()
+        
+        if os.path.exists(new_path):
+            return new_path
+        return None
+    except Exception as e:
+        print("win32com conversion failed:", e)
+        if os.path.exists(new_path):
+            return new_path
+        return None
+
+@login_required
 def read_workspace_file(request, file_id):
     if str(file_id).startswith('ai_'):
         filename = str(file_id)[3:]
@@ -452,6 +509,30 @@ def read_workspace_file(request, file_id):
     files = _get_workspace_files(request)
     ws_file = get_object_or_404(files, id=int_id)
     try:
+        # Auto-convert .doc to .docx permanently in the database
+        if ws_file.original_name.lower().endswith('.doc') and not ws_file.original_name.lower().endswith('.docx'):
+            new_path = _convert_doc_to_docx_win32(ws_file.file.path)
+            if new_path:
+                import os
+                # Delete old .doc file from disk
+                try:
+                    os.remove(ws_file.file.path)
+                except:
+                    pass
+                # Update Django model
+                ws_file.file.name = ws_file.file.name + 'x'
+                ws_file.original_name = ws_file.original_name + 'x'
+                ws_file.save()
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Could not convert .doc to .docx natively. Please install MS Word or upload a .docx.'})
+
+        if ws_file.original_name.lower().endswith('.docx'):
+            import mammoth
+            with open(ws_file.file.path, 'rb') as docx_file:
+                result = mammoth.convert_to_html(docx_file)
+                html = result.value
+            return JsonResponse({'status': 'ok', 'content': html, 'filename': ws_file.original_name})
+            
         with open(ws_file.file.path, 'r', encoding='utf-8') as f:
             content = f.read(20000) # Cap size to 20K chars
         return JsonResponse({'status': 'ok', 'content': content, 'filename': ws_file.original_name})
@@ -488,8 +569,15 @@ def save_workspace_file(request, file_id):
     files = _get_workspace_files(request)
     ws_file = get_object_or_404(files, id=int_id)
     try:
-        with open(ws_file.file.path, 'w', encoding='utf-8') as f:
-            f.write(content)
+        if ws_file.original_name.lower().endswith('.docx'):
+            from htmldocx import HtmlToDocx
+            from docx import Document
+            new_doc = Document()
+            HtmlToDocx().add_html_to_document(content, new_doc)
+            new_doc.save(ws_file.file.path)
+        else:
+            with open(ws_file.file.path, 'w', encoding='utf-8') as f:
+                f.write(content)
         return JsonResponse({'status': 'ok', 'message': 'File saved.'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})

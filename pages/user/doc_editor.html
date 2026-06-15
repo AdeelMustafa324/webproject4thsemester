@@ -1,0 +1,57 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Editing: {{ filename }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user/css/doc_editor.css' %}">
+{% endblock %}
+
+{% block layout %}
+<div class="doc-editor-layout">
+    <!-- Header / Top Bar -->
+    <header class="doc-editor-header">
+        <div class="doc-editor-header-left">
+            <a href="{% url 'core_app:workspace' %}" class="btn-back" title="Back to Workspace">&larr;</a>
+            <div class="doc-file-info">
+                <span class="doc-filename" id="docFileName">{{ filename }}</span>
+                <span class="doc-status" id="docSaveStatus">All changes saved</span>
+            </div>
+        </div>
+        <div class="doc-editor-header-right">
+            <button id="btnAiSpellCheck" class="btn-ai-tool"><span class="ai-sparkle">✨</span> AI Spell Check</button>
+            <button id="btnAiCoWrite" class="btn-ai-tool"><span class="ai-sparkle">✨</span> AI Co-Writing</button>
+            <button id="btnSaveDoc" class="btn-save-doc">Save Document</button>
+        </div>
+    </header>
+
+    <!-- Toolbar Area -->
+    <div class="doc-editor-ribbon" id="docEditorToolbar">
+        <!-- CKEditor Toolbar will be injected here -->
+    </div>
+
+    <!-- Main Canvas Area -->
+    <main class="doc-editor-main">
+        <div class="doc-editor-canvas-wrapper">
+            <div class="doc-editor-canvas" id="docEditorCanvas">
+                <!-- CKEditor Editable Area will be injected here -->
+                <div class="loader">Loading document...</div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+<script src="/static/libs/ckeditor/ckeditor.js"></script>
+
+<!-- Pass variables to JS -->
+<script>
+    window.DOC_EDITOR_FILE_ID = "{{ file_id|escapejs }}";
+    window.SKIPSTEP_ACTIVE_FILE = "{{ filename|escapejs }}";
+</script>
+
+<script src="{% static 'user/js/doc_editor.js' %}"></script>
+{% endblock %}

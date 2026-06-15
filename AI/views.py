@@ -176,6 +176,11 @@ def chat_api(request):
     user_message = body.get('message', '').strip()
     if not user_message:
         return JsonResponse({'status': 'error', 'response': 'Empty message.'}, status=400)
+        
+    active_file = body.get('active_file')
+    prompt_text = user_message
+    if active_file:
+        prompt_text = f"[System Context: The user is currently viewing/editing the file '{active_file}' in their active tab. If they ask to modify 'this file' or add something to 'the document/sheet', assume they mean '{active_file}'.]\n\n{user_message}"
 
     db_session_id = body.get('session_id')  # Optional: persist to DB
     db_session = None
@@ -198,7 +203,7 @@ def chat_api(request):
         history_key = _get_session_id(request)
 
     workspace_id = _get_workspace_id(request)
-    result = send_message(history_key, workspace_id, user_message)
+    result = send_message(history_key, workspace_id, prompt_text)
 
     # Persist to DB if a session was resolved
     if db_session and result.get('status') == 'ok':

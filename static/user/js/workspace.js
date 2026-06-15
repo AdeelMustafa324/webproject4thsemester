@@ -67,6 +67,37 @@ function getModeForFilename(name) {
     return map[ext] || 'text/plain';
 }
 
+function loadCKEditor() {
+    return new Promise((resolve, reject) => {
+        if (window.DecoupledEditor && window.DOMPurify) return resolve();
+        let loadedCount = 0;
+        const checkDone = () => {
+            loadedCount++;
+            if (loadedCount === 2) resolve();
+        };
+
+        if (!window.DOMPurify) {
+            const dompurifyScript = document.createElement('script');
+            dompurifyScript.src = '/static/libs/dompurify/purify.min.js';
+            dompurifyScript.onload = checkDone;
+            dompurifyScript.onerror = reject;
+            document.head.appendChild(dompurifyScript);
+        } else {
+            checkDone();
+        }
+
+        if (!window.DecoupledEditor) {
+            const ckScript = document.createElement('script');
+            ckScript.src = '/static/libs/ckeditor/ckeditor.js';
+            ckScript.onload = checkDone;
+            ckScript.onerror = reject;
+            document.head.appendChild(ckScript);
+        } else {
+            checkDone();
+        }
+    });
+}
+
 // -----------------------------------------------------------------------
 // Filters
 // -----------------------------------------------------------------------
@@ -191,7 +222,29 @@ function initEdit() {
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.style.display !== 'none') closeModal();
+        if (e.key === 'Escape' && docModal && docModal.style.display !== 'none') closeDocModal();
     });
+
+    // Doc Editor Events
+    const docModal = document.getElementById('wsDocEditorModal');
+    const docBtnCancel = document.getElementById('wsDocEditorCancel');
+    const docBtnSave = document.getElementById('wsDocEditorSave');
+    const docBtnClose = document.getElementById('wsDocEditorClose');
+    const docStatus = document.getElementById('wsDocEditorStatus');
+
+    function closeDocModal() {
+        if (docModal) docModal.style.display = 'none';
+        currentFileId = null;
+    }
+
+    if (docBtnCancel) docBtnCancel.addEventListener('click', closeDocModal);
+    if (docBtnClose) docBtnClose.addEventListener('click', closeDocModal);
+
+    if (docModal) {
+        docModal.addEventListener('click', (e) => {
+            if (e.target === docModal) closeDocModal();
+        });
+    }
 
     document.querySelectorAll('.btn-edit-ws').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -200,9 +253,14 @@ function initEdit() {
 
             // If it's a CSV or XLSX file, redirect to the live sheet editor
             if (name.toLowerCase().endsWith('.csv') || name.toLowerCase().endsWith('.xlsx')) {
-                // For AI files, extract the filename from the id
                 const sheetName = id.startsWith('ai_') ? id.substring(3) : name;
-                window.location.href = `/ai/sheet-editor/${encodeURIComponent(sheetName)}/`;
+                window.location.href = `/workspace/sheet-editor/${encodeURIComponent(sheetName)}/`;
+                return;
+            }
+
+            // If it's a docx or doc file, redirect to the new Full Screen Doc Editor
+            if (name.toLowerCase().endsWith('.docx') || name.toLowerCase().endsWith('.doc')) {
+                window.location.href = `/workspace/doc-editor/${encodeURIComponent(id)}/`;
                 return;
             }
 

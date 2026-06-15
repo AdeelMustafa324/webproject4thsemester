@@ -65,7 +65,14 @@ def create_file(session_id: str, filename: str, content: str) -> dict:
 
     path = _safe_path(session_id, filename)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding='utf-8')
+    
+    if filename.lower().endswith('.docx'):
+        from docx import Document
+        doc = Document()
+        doc.add_paragraph(content)
+        doc.save(path)
+    else:
+        path.write_text(content, encoding='utf-8')
     return {'status': 'ok', 'message': f'File "{filename}" created ({len(content)} chars).'}
 
 
@@ -86,6 +93,10 @@ def read_file(session_id: str, filename: str) -> dict:
             for row in ws.iter_rows(values_only=True):
                 writer.writerow([str(cell) if cell is not None else "" for cell in row])
             text = output.getvalue()
+        elif path.name.lower().endswith('.docx'):
+            import docx
+            doc = docx.Document(path)
+            text = "\n".join([p.text for p in doc.paragraphs])
         else:
             text = path.read_text(encoding='utf-8')
     except UnicodeDecodeError:
@@ -105,6 +116,21 @@ def edit_file(session_id: str, filename: str, search_text: str, replace_text: st
     path = _safe_path(session_id, filename)
     if not path.exists():
         return {'status': 'error', 'message': f'File "{filename}" does not exist.'}
+        
+    if filename.lower().endswith('.docx'):
+        from docx import Document
+        doc = Document(path)
+        replaced = False
+        for p in doc.paragraphs:
+            if search_text in p.text:
+                p.text = p.text.replace(search_text, replace_text, 1)
+                replaced = True
+                break
+        if not replaced:
+            return {'status': 'error', 'message': f'Search text not found in "{filename}".'}
+        doc.save(path)
+        return {'status': 'ok', 'message': f'Replaced in "{filename}" successfully.'}
+        
     text = path.read_text(encoding='utf-8')
     if search_text not in text:
         return {'status': 'error', 'message': f'Search text not found in "{filename}".'}
@@ -121,8 +147,15 @@ def append_to_file(session_id: str, filename: str, content: str) -> dict:
     path = _safe_path(session_id, filename)
     if not path.exists():
         return {'status': 'error', 'message': f'File "{filename}" does not exist.'}
-    with open(path, 'a', encoding='utf-8') as f:
-        f.write(content)
+        
+    if filename.lower().endswith('.docx'):
+        from docx import Document
+        doc = Document(path)
+        doc.add_paragraph(content)
+        doc.save(path)
+    else:
+        with open(path, 'a', encoding='utf-8') as f:
+            f.write(content)
     return {'status': 'ok', 'message': f'Appended to "{filename}" successfully.'}
 
 

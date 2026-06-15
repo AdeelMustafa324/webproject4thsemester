@@ -259,7 +259,10 @@
 </div>
 
 <!-- Pass filename to JS -->
-<script>window.__SHEET_FILENAME__ = "{{ filename|escapejs }}";</script>
+<script>
+    window.__SHEET_FILENAME__ = "{{ filename|escapejs }}";
+    window.SKIPSTEP_ACTIVE_FILE = "{{ filename|escapejs }}";
+</script>
 {% endblock %}
 
 {% block tool_js %}

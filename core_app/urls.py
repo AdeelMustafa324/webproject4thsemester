@@ -14,6 +14,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('store/', views.store, name='store'),
     path('workspace/', views.workspace, name='workspace'),
+    path('workspace/doc-editor/<str:file_id>/', views.doc_editor_view, name='doc_editor'),
 
     # Conversion tools
     path('tools/pdf-to-word/', views.tool_pdf_to_word, name='tool_pdf_to_word'),
