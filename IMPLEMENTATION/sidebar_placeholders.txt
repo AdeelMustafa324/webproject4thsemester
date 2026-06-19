@@ -1,0 +1,8 @@
+Feature: Sidebar Navigation Links (Analytics, My Purchases, AI Chat)
+Status: Unimplemented / Placeholders
+
+Details: 
+Several items in the sidebar navigation are placeholders linking to href="#":
+- "Analytics" in the Dashboard sidebar
+- "My Purchases" in the Marketplace sidebar
+- "AI Chat" in the Workspace/Dashboard sidebar (the actual AI chat panel only opens via the floating FAB button, the sidebar link does nothing).

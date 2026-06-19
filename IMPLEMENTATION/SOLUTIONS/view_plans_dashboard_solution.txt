@@ -1,0 +1,8 @@
+Problem:
+The "View Plans" button on the Dashboard links to href="#" and does nothing.
+
+Solution Plan:
+1. Open pages/user/dashboard.html
+2. Locate the "View Plans" button inside the connects balance card (around line 90).
+3. Change the button to an anchor tag linking to the store route where users purchase connects:
+   <a href="{% url 'core_app:store' %}" class="btn-ghost">View Plans <i class="lucide lucide-arrow-up-right"></i></a>

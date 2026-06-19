@@ -1,0 +1,8 @@
+Feature: AI Chat Assistant - History Tab API Failure
+Status: Broken (HTTP 500)
+
+Symptom: 
+Clicking on the "History" tab inside the AI Chat sidebar returns a "Could not load history" error message on the frontend.
+
+Root Cause: 
+The backend API endpoint /ai/api/sessions/ responds with an Internal Server Error (500) when attempting to fetch the history sessions.

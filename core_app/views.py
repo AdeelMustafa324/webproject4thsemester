@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.db.models import Sum, Max
 from django.core.files.base import ContentFile
@@ -128,6 +128,64 @@ def product_detail(request, product_id):
         'product': product,
         'has_purchased': has_purchased
     })
+
+
+@login_required
+def import_template(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    # Verify purchase
+    has_purchased = Transaction.objects.filter(
+        user=request.user,
+        product=product,
+        transaction_type='spend_connects'
+    ).exists()
+    
+    if not has_purchased:
+        messages.error(request, "You must purchase this product before editing it.")
+        return redirect('core_app:product_detail', product_id=product.id)
+        
+    if not product.file_url:
+        messages.error(request, "No editable file available for this product.")
+        return redirect('core_app:product_detail', product_id=product.id)
+
+    # Copy the file into the user's workspace
+    import os
+    import shutil
+    import uuid
+    from django.core.files.base import ContentFile
+    
+    source_path = product.file_url.path
+    if not os.path.exists(source_path):
+        messages.error(request, "Source file not found on server.")
+        return redirect('core_app:product_detail', product_id=product.id)
+        
+    # Read content and save as new workspace file
+    with open(source_path, 'rb') as f:
+        content = f.read()
+        
+    original_name = os.path.basename(product.file_url.name)
+    ws_file = WorkspaceFile(
+        user=request.user,
+        session_key='',
+        original_name=f"Copy of {original_name}",
+        source='uploaded',
+        conversion_type='imported'
+    )
+    ws_file.file.save(original_name, ContentFile(content), save=True)
+    
+    messages.success(request, "Template imported to workspace successfully!")
+    
+    # Redirect based on type
+    name = ws_file.original_name.lower()
+    if name.endswith('.docx') or name.endswith('.doc'):
+        return redirect('core_app:doc_editor', file_id=ws_file.id)
+    elif name.endswith('.csv') or name.endswith('.xlsx'):
+        # For sheet editor, it uses the ai sheet editor route? Wait, core_app doesn't have it.
+        # But we redirect to `/ai/sheet-editor/...` via url if needed.
+        # Let's redirect to workspace for now, or construct the URL directly
+        return redirect(f'/ai/sheet-editor/{ws_file.original_name}/')
+    else:
+        return redirect('core_app:workspace')
 
 
 @login_required

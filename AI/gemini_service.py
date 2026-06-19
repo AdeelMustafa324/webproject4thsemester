@@ -12,10 +12,10 @@ in settings.py. Supports comma-separated GEMINI_API_KEY for rotation.
 import os
 import json
 import time
+import asyncio
 import warnings
 from typing import Optional, Union, List, Literal
 
-# Suppress the FutureWarning from any leftover google.generativeai imports
 warnings.filterwarnings('ignore', category=FutureWarning, module='google')
 
 # pyrefly: ignore [missing-import]
@@ -29,11 +29,10 @@ from .ai_tools import TOOL_DECLARATIONS, TOOL_MAP
 
 
 # ---------------------------------------------------------------------------
-# API Key setup — reads from os.environ (load_dotenv already ran in settings)
+# API Key setup
 # ---------------------------------------------------------------------------
 
 def _load_api_keys() -> list:
-    """Load API keys from environment. Supports comma-separated keys for rotation."""
     raw = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY', '')
     return [k.strip() for k in raw.split(',') if k.strip()]
 
@@ -46,12 +45,10 @@ if not _API_KEYS:
 
 
 def _get_active_api_key():
-    """Return the currently active API key, or None if none configured."""
     return _API_KEYS[_current_key_idx] if _API_KEYS else None
 
 
 def _rotate_api_key():
-    """Rotate to next API key. Only useful when multiple keys are configured."""
     global _current_key_idx
     if len(_API_KEYS) > 1:
         _current_key_idx = (_current_key_idx + 1) % len(_API_KEYS)
@@ -59,7 +56,6 @@ def _rotate_api_key():
 
 
 def _make_client():
-    """Create a new google.genai Client with the active API key."""
     key = _get_active_api_key()
     if not key:
         raise RuntimeError("No Gemini API key configured. Set GEMINI_API_KEY in .env.")
@@ -71,7 +67,6 @@ def _make_client():
 # ---------------------------------------------------------------------------
 
 def _env_int(name, default, minimum=None, maximum=None):
-    """Read a bounded integer from the environment."""
     try:
         value = int(os.environ.get(name, default))
     except (TypeError, ValueError):
@@ -84,10 +79,9 @@ def _env_int(name, default, minimum=None, maximum=None):
 
 
 GEMINI_MODEL          = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
-GEMINI_MAX_INPUT_CHARS  = _env_int('GEMINI_MAX_INPUT_CHARS',  8000,  minimum=1,  maximum=20000)
+GEMINI_MAX_INPUT_TOKENS = _env_int('GEMINI_MAX_INPUT_TOKENS', 32000, minimum=1000, maximum=1000000)
 GEMINI_MAX_OUTPUT_TOKENS= _env_int('GEMINI_MAX_OUTPUT_TOKENS', 4096, minimum=64, maximum=65536)
 GEMINI_MAX_TOOL_CALLS   = _env_int('GEMINI_MAX_TOOL_CALLS',   6,    minimum=0,  maximum=10)
-GEMINI_MAX_HISTORY_ITEMS= _env_int('GEMINI_MAX_HISTORY_ITEMS', 8,   minimum=0,  maximum=30)
 
 
 # ---------------------------------------------------------------------------
@@ -110,18 +104,13 @@ Rules:
 
 --- FEW SHOT EXAMPLE FOR DATA EDITING ---
 User: "Multiply all values in the 'Price' column of sales.xlsx by 1.2"
-AI Action: `execute_python(code="import pandas as pd\ndf = pd.read_excel('sales.xlsx')\ndf['Price'] = df['Price'] * 1.2\ndf.to_excel('sales.xlsx', index=False)")`
+AI Action: `execute_python(code="import pandas as pd\\ndf = pd.read_excel('sales.xlsx')\\ndf['Price'] = df['Price'] * 1.2\\ndf.to_excel('sales.xlsx', index=False)")`
 AI Response: "I have successfully multiplied the Price column by 1.2 using a Python script."
 -----------------------------------------
 """
 
 
-# ---------------------------------------------------------------------------
-# Tool declarations for the new SDK
-# ---------------------------------------------------------------------------
-
 def _build_tools():
-    """Convert TOOL_DECLARATIONS to google.genai FunctionDeclaration objects."""
     declarations = []
     for decl in TOOL_DECLARATIONS:
         declarations.append(
@@ -133,42 +122,33 @@ def _build_tools():
         )
     return [genai_types.Tool(function_declarations=declarations)]
 
-
 _TOOLS = _build_tools()
 
 
-# ---------------------------------------------------------------------------
-# In-memory chat history keyed by session_id
-# New SDK uses a history list of Content objects (dicts are fine)
-# ---------------------------------------------------------------------------
-
-_chat_histories = {}  # session_id -> list of {"role": ..., "parts": [...]} dicts
-
-
-def _get_history(session_id):
-    """Return the mutable history list for a session."""
-    if session_id not in _chat_histories:
-        _chat_histories[session_id] = []
-    return _chat_histories[session_id]
+async def execute_code_in_sandbox(code: str, workspace_id: str) -> dict:
+    """
+    Stub for secure Python execution in an isolated sandbox (e.g., E2B, Modal).
+    TODO: Integrate third-party sandbox service here.
+    """
+    return {
+        'status': 'error',
+        'message': 'Security constraint: Raw Python execution is currently disabled pending sandbox integration.'
+    }
 
 
-def _trim_history(session_id):
-    """Keep only recent turns in memory."""
-    history = _chat_histories.get(session_id)
-    if history and GEMINI_MAX_HISTORY_ITEMS > 0 and len(history) > GEMINI_MAX_HISTORY_ITEMS:
-        _chat_histories[session_id] = history[-GEMINI_MAX_HISTORY_ITEMS:]
-    elif GEMINI_MAX_HISTORY_ITEMS <= 0:
-        _chat_histories.pop(session_id, None)
-
-
-def _execute_tool_call(workspace_id, function_call):
-    """Execute a tool function and return the result dict."""
+async def _execute_tool_call(workspace_id, function_call):
+    """Execute a tool function asynchronously and return the result dict."""
     name = function_call.name
     args = dict(function_call.args) if function_call.args else {}
+    
+    if name == 'execute_python':
+        return await execute_code_in_sandbox(args.get('code', ''), workspace_id)
+        
     func = TOOL_MAP.get(name)
     if func is None:
         return {'status': 'error', 'message': f'Unknown tool: {name}'}
-    return func(workspace_id, **args)
+    # Run the synchronous tool function in a separate thread
+    return await asyncio.to_thread(func, workspace_id, **args)
 
 
 def _friendly_error(error):
@@ -179,26 +159,51 @@ def _friendly_error(error):
             'Set GEMINI_MODEL in .env to a valid model name like gemini-2.5-flash.'
         )
     if 'API key not valid' in message or 'API_KEY_INVALID' in message:
-        return (
-            'AI Error: Invalid Gemini API key. '
-            'Check the GEMINI_API_KEY value in your .env file.'
-        )
+        return 'AI Error: Invalid Gemini API key. Check the GEMINI_API_KEY value in your .env file.'
     if 'PERMISSION_DENIED' in message:
-        return (
-            'AI Error: API key does not have permission to use this model. '
-            'Check your Google AI Studio quota and billing settings.'
-        )
+        return 'AI Error: API key does not have permission to use this model. Check your Google AI Studio quota and billing settings.'
     return f'AI Error: {message}'
 
 
+async def _trim_history_by_tokens(client, history):
+    """
+    Use native count_tokens to ensure history is within GEMINI_MAX_INPUT_TOKENS.
+    Trims oldest turns iteratively if necessary, skipping system instruction.
+    """
+    if not history:
+        return history
+    
+    while len(history) > 1:
+        try:
+            resp = await client.aio.models.count_tokens(
+                model=GEMINI_MODEL,
+                contents=history
+            )
+            if resp.total_tokens <= GEMINI_MAX_INPUT_TOKENS:
+                break
+            # Remove the oldest turn (usually index 0, or 0/1 if pairs of user/model)
+            # Try to remove a user/model pair to keep history balanced
+            if len(history) >= 2 and history[0]['role'] == 'user' and history[1]['role'] == 'model':
+                history = history[2:]
+            else:
+                history.pop(0)
+        except Exception as e:
+            # If counting fails, fallback to keeping last 8
+            print(f"Token counting failed: {e}")
+            if len(history) > 8:
+                history = history[-8:]
+            break
+    return history
+
+
 # ---------------------------------------------------------------------------
-# Main send_message (new SDK, stateless — history passed explicitly)
+# Main send_message (Stateless, Async, Token-aware)
 # ---------------------------------------------------------------------------
 
-def send_message(history_key, workspace_id, user_message):
+async def send_message(messages_data: list, workspace_id: str, user_message: str):
     """
-    Send a message, handle tool calls in a loop, return final text + file_actions.
-    Uses the new google.genai SDK with explicit history management.
+    messages_data: list of dicts [{'role': 'user'/'model', 'content': '...'}] from DB
+    Returns a dict with 'status', 'response', 'file_actions' and internally manages tool calls asynchronously.
     """
     if not _API_KEYS:
         return {
@@ -208,24 +213,25 @@ def send_message(history_key, workspace_id, user_message):
         }
 
     user_message = user_message.strip()
-    if len(user_message) > GEMINI_MAX_INPUT_CHARS:
-        return {
-            'status': 'error',
-            'response': f'Message too long. Max {GEMINI_MAX_INPUT_CHARS} characters.',
-            'file_actions': [],
-        }
 
-    history = _get_history(history_key)
-    file_actions = []
+    history = []
+    for msg in messages_data:
+        content = msg.get('content', '').strip()
+        if content:
+            history.append({'role': msg.get('role'), 'parts': [{'text': content}]})
 
-    # Add user message to history
+    # Add the current message
     history.append({'role': 'user', 'parts': [{'text': user_message}]})
 
     retries = len(_API_KEYS) if len(_API_KEYS) > 1 else 1
+    file_actions = []
 
     for attempt in range(retries):
         try:
             client = _make_client()
+            
+            # Trim history to fit token limits
+            history = await _trim_history_by_tokens(client, history)
 
             config = genai_types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -234,20 +240,17 @@ def send_message(history_key, workspace_id, user_message):
                 temperature=0.4,
             )
 
-            # Tool-call loop
             iterations = 0
-            current_history = list(history)  # copy so we can append within loop
 
             while iterations < GEMINI_MAX_TOOL_CALLS:
                 iterations += 1
 
-                response = client.models.generate_content(
+                response = await client.aio.models.generate_content(
                     model=GEMINI_MODEL,
-                    contents=current_history,
+                    contents=history,
                     config=config,
                 )
 
-                # Extract the response candidate
                 if not response.candidates:
                     break
 
@@ -257,17 +260,14 @@ def send_message(history_key, workspace_id, user_message):
                 if not content or not content.parts:
                     break
 
-                # Check for function calls
                 has_tool_call = False
                 for part in content.parts:
                     if part.function_call and part.function_call.name:
                         has_tool_call = True
                         fc = part.function_call
 
-                        # Execute the tool
-                        result = _execute_tool_call(workspace_id, fc)
+                        result = await _execute_tool_call(workspace_id, fc)
 
-                        # Track file actions for the frontend
                         if fc.name in ('create_file', 'edit_file', 'append_to_file',
                                        'delete_file', 'add_row_to_csv', 'create_excel_file'):
                             file_actions.append({
@@ -275,14 +275,12 @@ def send_message(history_key, workspace_id, user_message):
                                 'filename': dict(fc.args).get('filename', '') if fc.args else '',
                             })
 
-                        # Add model's tool call to history
-                        current_history.append({
+                        history.append({
                             'role': 'model',
                             'parts': [{'function_call': {'name': fc.name, 'args': dict(fc.args) if fc.args else {}}}]
                         })
 
-                        # Add tool result to history
-                        current_history.append({
+                        history.append({
                             'role': 'user',
                             'parts': [{
                                 'function_response': {
@@ -291,29 +289,19 @@ def send_message(history_key, workspace_id, user_message):
                                 }
                             }]
                         })
-                        break  # process one tool call per iteration
+                        break
 
                 if not has_tool_call:
-                    # No more tool calls — collect final text
                     text = ''
                     for part in content.parts:
                         if hasattr(part, 'text') and part.text:
                             text += part.text
-
-                    # Persist the final model response to in-memory history
-                    history.append({
-                        'role': 'model',
-                        'parts': [{'text': text}]
-                    })
-                    _trim_history(history_key)
 
                     if not text and iterations >= GEMINI_MAX_TOOL_CALLS:
                         text = 'I reached the tool-call limit. Try a smaller, more specific request.'
 
                     return {'status': 'ok', 'response': text, 'file_actions': file_actions}
 
-            # Hit the tool call limit with no final text
-            _trim_history(history_key)
             return {
                 'status': 'ok',
                 'response': 'I completed the requested operations.',
@@ -324,15 +312,11 @@ def send_message(history_key, workspace_id, user_message):
             error_str = str(e)
             if '429' in error_str and attempt < retries - 1:
                 _rotate_api_key()
-                time.sleep(0.5)
-                # Remove the user message we added so we don't duplicate it
-                if history and history[-1].get('role') == 'user':
+                await asyncio.sleep(0.5)
+                # Remove the newly added user message to avoid duplicate if we retry
+                if history and history[-1].get('role') == 'user' and not hasattr(history[-1]['parts'][0], 'function_response'):
                     history.pop()
                 continue
-            # On unrecoverable error, remove the last user message to avoid corrupting history
-            if history and history[-1].get('role') == 'user':
-                history.pop()
-            _trim_history(history_key)
             return {'status': 'error', 'response': _friendly_error(e), 'file_actions': []}
 
     return {
@@ -342,55 +326,13 @@ def send_message(history_key, workspace_id, user_message):
     }
 
 
-def clear_session(session_id):
-    """Clear in-memory chat history for a session."""
-    _chat_histories.pop(session_id, None)
-
-
-def rebuild_memory_history(session_id, messages_data):
-    """
-    Rebuild in-memory history from DB records.
-    Strips out historical tool calls and trims context window safely.
-    messages_data is a list of dicts: [{'role': 'user'/'model', 'content': '...'}]
-    """
-    if session_id in _chat_histories:
-        return  # already loaded
-
-    history = []
-    total_chars = 0
-    # Process newest messages first to ensure we keep the most recent context
-    # using a safe threshold limit (e.g., 20,000 chars)
-    limit = GEMINI_MAX_INPUT_CHARS * 2
-
-    for msg in reversed(messages_data):
-        content = msg.get('content', '').strip()
-        # Only load standard text roles, explicitly stripping tool-call artifacts
-        if not content:
-            continue
-
-        if total_chars + len(content) > limit:
-            break
-
-        total_chars += len(content)
-        history.append({
-            'role': msg.get('role'),
-            'parts': [{'text': content}]
-        })
-
-    # Reverse back to chronological order for Gemini API
-    history.reverse()
-    _chat_histories[session_id] = history
-
-
-
-def generate_content_with_retry(system_instruction, prompt):
-    """Ad-hoc single generation (no tools, no history)."""
+async def generate_content_with_retry(system_instruction, prompt):
     retries = max(len(_API_KEYS), 1)
     last_error = None
     for attempt in range(retries):
         try:
             client = _make_client()
-            response = client.models.generate_content(
+            response = await client.aio.models.generate_content(
                 model=GEMINI_MODEL,
                 contents=prompt,
                 config=genai_types.GenerateContentConfig(
@@ -403,7 +345,7 @@ def generate_content_with_retry(system_instruction, prompt):
             last_error = e
             if '429' in str(e) and attempt < retries - 1:
                 _rotate_api_key()
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 continue
             raise
     raise last_error
@@ -413,26 +355,20 @@ def generate_content_with_retry(system_instruction, prompt):
 # Structured-Output Sheet Operations (google.genai + Pydantic)
 # ---------------------------------------------------------------------------
 
-
-
-
 class SetCellOp(BaseModel):
     op: Literal['set_cell']
     row: int
     col: int
     value: Union[str, int, float]
 
-
 class InsertRowOp(BaseModel):
     op: Literal['insert_row']
     after_row: int
     values: List[Union[str, int, float, None]]
 
-
 class DeleteRowOp(BaseModel):
     op: Literal['delete_row']
     row: int
-
 
 class InsertColOp(BaseModel):
     op: Literal['insert_col']
@@ -440,11 +376,9 @@ class InsertColOp(BaseModel):
     header: str
     values: List[Union[str, int, float, None]]
 
-
 class DeleteColOp(BaseModel):
     op: Literal['delete_col']
     col: int
-
 
 class FormatSpec(BaseModel):
     bgColor: Optional[str] = None
@@ -453,18 +387,15 @@ class FormatSpec(BaseModel):
     italic: Optional[bool] = None
     align: Optional[Literal['left', 'center', 'right']] = None
 
-
 class SetFormatOp(BaseModel):
     op: Literal['set_format']
     row: int
     col: int
     format: FormatSpec
 
-
 class SheetOperationsResponse(BaseModel):
     operations: List[Union[SetCellOp, InsertRowOp, DeleteRowOp, InsertColOp, DeleteColOp, SetFormatOp]]
     message: str
-
 
 _SHEET_SYSTEM_INSTRUCTION = """You are a strict spreadsheet operation engine for a Django backend.
 Never use conversational filler. Output ONLY the structured data.
@@ -482,12 +413,7 @@ SAFETY RULES:
 7. NEVER rewrite the entire sheet cell-by-cell. Max 500 operations or abort.
 """
 
-
-def generate_sheet_ops(sheet_data, user_prompt):
-    """
-    Call Gemini with a strict Pydantic schema for structured spreadsheet operations.
-    Returns {'status': 'ok', 'operations': [...], 'message': '...'} or error dict.
-    """
+async def generate_sheet_ops(sheet_data, user_prompt):
     if not _API_KEYS:
         return {'status': 'error', 'message': 'No Gemini API key configured. Set GEMINI_API_KEY in .env.'}
 
@@ -506,7 +432,7 @@ def generate_sheet_ops(sheet_data, user_prompt):
 
             print(f"[AI] Sheet ops: model={GEMINI_MODEL}, rows={len(sheet_data)}")
 
-            response = client.models.generate_content(
+            response = await client.aio.models.generate_content(
                 model=GEMINI_MODEL,
                 contents=contents,
                 config=genai_types.GenerateContentConfig(
@@ -519,7 +445,6 @@ def generate_sheet_ops(sheet_data, user_prompt):
                 ),
             )
 
-            # Primary: use parsed output
             parsed = response.parsed
             if parsed is not None:
                 return {
@@ -528,7 +453,6 @@ def generate_sheet_ops(sheet_data, user_prompt):
                     'message': parsed.message,
                 }
 
-            # Check for truncation
             if response.candidates:
                 cand = response.candidates[0]
                 finish = str(getattr(cand, 'finish_reason', ''))
@@ -538,7 +462,6 @@ def generate_sheet_ops(sheet_data, user_prompt):
                         'message': 'Spreadsheet too large for one AI operation. Try a smaller instruction.',
                     }
 
-            # Fallback: parse text manually
             raw_text = getattr(response, 'text', '') or ''
             if raw_text:
                 text = raw_text.strip()
@@ -569,10 +492,10 @@ def generate_sheet_ops(sheet_data, user_prompt):
             print(f"[AI] generate_sheet_ops attempt {attempt + 1}/{retries} failed: {error_str}")
             if '429' in error_str and attempt < retries - 1:
                 _rotate_api_key()
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 continue
             if ('500' in error_str or '503' in error_str) and attempt < retries - 1:
-                time.sleep(1)
+                await asyncio.sleep(1)
                 continue
             break
 

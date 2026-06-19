@@ -251,10 +251,9 @@ function initEdit() {
             const id = btn.dataset.id;
             const name = btn.dataset.name || 'file';
 
-            // If it's a CSV or XLSX file, redirect to the live sheet editor
             if (name.toLowerCase().endsWith('.csv') || name.toLowerCase().endsWith('.xlsx')) {
                 const sheetName = id.startsWith('ai_') ? id.substring(3) : name;
-                window.location.href = `/workspace/sheet-editor/${encodeURIComponent(sheetName)}/`;
+                window.location.href = `/ai/sheet-editor/${encodeURIComponent(sheetName)}/`;
                 return;
             }
 
@@ -293,10 +292,22 @@ function initEdit() {
                 const data = await res.json();
                 if (data.status === 'ok') {
                     titleEl.textContent = 'Editing: ' + data.filename;
-                    editor.setValue(data.content);
+                    editor.setValue(data.content || '');
                     editor.setOption('readOnly', false);
                     editor.setOption('mode', getModeForFilename(data.filename));
+                    
+                    // Enable save button immediately on successful load
                     btnSave.disabled = false;
+                    btnSave.style.opacity = '1';
+                    btnSave.style.cursor = 'pointer';
+
+                    // Ensure it stays enabled if user types
+                    editor.on('change', () => {
+                        btnSave.disabled = false;
+                        statusEl.textContent = 'Unsaved changes...';
+                        statusEl.style.color = '#ff9800';
+                    });
+
                     // Refresh so it renders correctly inside the modal
                     setTimeout(() => editor.refresh(), 50);
                 } else {

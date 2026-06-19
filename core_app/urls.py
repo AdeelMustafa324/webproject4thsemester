@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('marketplace/', views.marketplace, name='marketplace'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
+    path('import-template/<int:product_id>/', views.import_template, name='import_template'),
     path('login/', views.user_login, name='login'),
     path('register/', views.user_register, name='register'),
     path('logout/', views.user_logout, name='logout'),

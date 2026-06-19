@@ -1,0 +1,7 @@
+Problem:
+1. Save button is permanently disabled in the document editor.
+2. Opening a text file sometimes causes a 500 error: "NameError: name 'HttpResponse' is not defined" in core_app/views.py.
+
+Solution Plan:
+1. Backend: In `core_app/views.py`, import `HttpResponse` from `django.http` at the top of the file to fix the 500 error when the doc_editor_view catches a ValueError.
+2. Frontend: Open `pages/user/doc_editor.html`. Locate the Javascript logic handling the CodeMirror instance. Ensure that inside the `editor.on("change", ...)` event, the Save button (`#saveDocBtn`) has its `disabled` property removed so the user can save their edits.

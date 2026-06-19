@@ -1,0 +1,5 @@
+Feature: Quick Tools Links (Dashboard)
+Status: Unimplemented / Placeholders
+
+Details: 
+Under the "Quick Tools" section on the Dashboard, the links for "Image to Text", "Merge PDF", and "Compress" are currently set to href="#" and do not navigate anywhere or trigger any action when clicked.

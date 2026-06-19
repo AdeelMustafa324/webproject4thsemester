@@ -1,0 +1,7 @@
+Problem:
+Sidebar links for Analytics, My Purchases, and AI Chat have href="#" and do nothing.
+
+Solution Plan:
+1. Open pages/partials/_sidebar.html (or equivalent template).
+2. For "Analytics" and "My Purchases": Either hide them using `display: none` until backend views are built for them, or point them to the `store` / `dashboard` views respectively as an interim solution.
+3. For "AI Chat": This sidebar link should trigger the same Javascript function that the floating action button (FAB) uses to open the chat sidebar. Attach an `onclick="toggleAiChat(); return false;"` handler to it.

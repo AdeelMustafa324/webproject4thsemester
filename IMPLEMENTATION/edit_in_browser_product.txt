@@ -1,0 +1,5 @@
+Feature: Edit in Browser (Product Details)
+Status: Unimplemented / Coming Soon
+
+Details: 
+On the product details page for purchased templates (e.g., YouTube Thumbnail Kit V3), the "Edit in Browser" button is currently disabled and displays a "Coming Soon" badge. No backend logic is wired for this yet.

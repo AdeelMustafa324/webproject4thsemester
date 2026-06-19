@@ -1,0 +1,8 @@
+Problem:
+Clicking the "Rename" or "Delete" buttons for files in the Workspace has no effect.
+
+Solution Plan:
+1. Open `static/user/js/workspace.js`.
+2. Locate the event listeners for `.rename-btn` and `.delete-btn` (or create them if missing).
+3. For Delete: Add a `fetch` call to `/api/workspace/<file_id>/delete/` with a POST request. Prompt the user for confirmation before deleting. On success, remove the file row from the DOM.
+4. For Rename: Implement a prompt `prompt('Enter new name:')`. Send the new name via a POST request to `/api/workspace/<file_id>/rename/`. On success, update the filename in the DOM.

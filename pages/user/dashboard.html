@@ -23,8 +23,8 @@
       </nav>
     </div>
     <div class="nav-right">
-      <button class="icon-btn"><i class="lucide lucide-search"></i></button>
-      <button class="icon-btn has-dot"><i class="lucide lucide-bell"></i></button>
+      <button class="icon-btn" onclick="alert('Global Search: Coming Soon'); return false;"><i class="lucide lucide-search"></i></button>
+      <button class="icon-btn has-dot" onclick="alert('Notifications: No new alerts'); return false;"><i class="lucide lucide-bell"></i></button>
       <button class="connects-btn"><i class="lucide lucide-zap"></i> Connects: {{ user.connects_balance }}</button>
       <form action="{% url 'core_app:logout' %}" method="post" style="display:inline; margin:0;">
           {% csrf_token %}
@@ -48,7 +48,7 @@
 
     <p class="side-label">Overview</p>
     <a href="{% url 'core_app:dashboard' %}" class="side-link active"><i class="lucide lucide-layout-dashboard"></i> Dashboard</a>
-    <a href="#" class="side-link"><i class="lucide lucide-activity"></i> Analytics</a>
+    <a href="#" class="side-link" onclick="alert('Analytics: Coming Soon'); return false;"><i class="lucide lucide-activity"></i> Analytics</a>
 
     <p class="side-label">Conversion Tools</p>
     <a href="{% url 'core_app:tool_pdf_to_word' %}" class="side-link"><i class="lucide lucide-wrench"></i> All Tools</a>
@@ -60,7 +60,7 @@
 
     <p class="side-label">Marketplace</p>
     <a href="{% url 'core_app:marketplace' %}" class="side-link"><i class="lucide lucide-store"></i> Browse Products</a>
-    <a href="#" class="side-link"><i class="lucide lucide-shopping-bag"></i> My Purchases</a>
+    <a href="#" class="side-link" onclick="alert('My Purchases: Coming Soon'); return false;"><i class="lucide lucide-shopping-bag"></i> My Purchases</a>
   </aside>
 
   <!-- MAIN -->
@@ -87,7 +87,7 @@
         <p class="balance-desc">Use connects to unlock premium templates, AI generations and advanced conversions.</p>
         <div class="hero-actions">
           <a href="{% url 'core_app:store' %}" class="btn-gold"><i class="lucide lucide-plus"></i> Buy More Connects</a>
-          <button class="btn-ghost">View Plans <i class="lucide lucide-arrow-up-right"></i></button>
+          <a href="{% url 'core_app:store' %}" class="btn-ghost">View Plans <i class="lucide lucide-arrow-up-right"></i></a>
         </div>
       </div>
 
@@ -160,9 +160,9 @@
         <a href="{% url 'core_app:tool_pdf_to_word' %}"><button class="tool"><span class="tag tag-red">PDF</span><span>PDF to Word</span></button></a>
         <a href="{% url 'core_app:tool_word_to_pdf' %}"><button class="tool"><span class="tag tag-blue">DOC</span><span>Word to PDF</span></button></a>
         <a href="{% url 'core_app:tool_excel_to_csv' %}"><button class="tool"><span class="tag tag-green">CSV</span><span>Excel to CSV</span></button></a>
-        <a href="#"><button class="tool"><span class="tag tag-purple">OCR</span><span>Image to Text</span></button></a>
-        <a href="#"><button class="tool"><span class="tag tag-orange">PDF</span><span>Merge PDF</span></button></a>
-        <a href="#"><button class="tool"><span class="tag tag-pink">ZIP</span><span>Compress</span></button></a>
+        <a href="#" style="pointer-events: none; opacity: 0.5;"><button class="tool" disabled><span class="tag tag-purple">OCR</span><span>Image to Text (Soon)</span></button></a>
+        <a href="#" style="pointer-events: none; opacity: 0.5;"><button class="tool" disabled><span class="tag tag-orange">PDF</span><span>Merge PDF (Soon)</span></button></a>
+        <a href="#" style="pointer-events: none; opacity: 0.5;"><button class="tool" disabled><span class="tag tag-pink">ZIP</span><span>Compress (Soon)</span></button></a>
       </div>
     </section>
 

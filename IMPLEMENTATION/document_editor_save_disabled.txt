@@ -1,0 +1,8 @@
+Feature: Document Editor - Save Button Disabled
+Status: Broken
+
+Symptom: 
+Opening a text file (e.g., test.txt) from the Workspace successfully opens the Document Editor modal and loads the CodeMirror editor. However, the Save button in the editor footer is permanently disabled.
+
+Root Cause: 
+The UI logic does not properly enable the Save button when the file content is modified, completely preventing the user from saving their work.

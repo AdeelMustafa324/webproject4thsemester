@@ -1,0 +1,5 @@
+Feature: View Plans Button (Dashboard)
+Status: Unimplemented / Placeholder
+
+Details: 
+The "View Plans" button located inside the connects balance card on the Dashboard connects to href="#" and has no functionality. It does not open a pricing modal or navigate to a subscription page.

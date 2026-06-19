@@ -1,0 +1,9 @@
+Problem:
+The "Edit in Browser" button on product details is currently disabled and shows a "Coming Soon" badge.
+
+Solution Plan:
+1. Open pages/user/product_detail.html.
+2. Locate the "Edit in Browser" button.
+3. Remove the 'disabled' attribute and the 'Coming Soon' badge.
+4. Update the button to link to a new backend view (e.g. `/workspace/import-template/<product_id>/`).
+5. In `core_app/views.py`, create the `import_template` view which takes the product file, copies it into the user's workspace, and then redirects them to the appropriate editor (doc_editor or sheet_editor) based on the file extension.

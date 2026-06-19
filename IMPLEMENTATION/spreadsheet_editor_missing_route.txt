@@ -1,0 +1,8 @@
+Feature: Spreadsheet Editor - Missing Route
+Status: Broken (HTTP 404)
+
+Symptom: 
+Clicking the "Edit" button for a spreadsheet file (e.g., test.xlsx) redirects to /workspace/sheet-editor/<file_id>/, which results in a Django 404 Page Not Found error.
+
+Root Cause: 
+The workspace/sheet-editor/ URL pattern is completely missing from Django's main urls.py routing, so the route does not exist on the backend.

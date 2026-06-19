@@ -1,0 +1,5 @@
+Feature: Workspace File Rename and Delete
+Status: Unimplemented / Placeholders
+
+Details: 
+Clicking the "Rename" or "Delete" action buttons for files inside the Workspace list view has no effect. The UI does not open any dialog, and no API calls are triggered. The functionality is completely missing.

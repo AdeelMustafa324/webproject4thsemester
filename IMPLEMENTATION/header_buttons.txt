@@ -1,0 +1,5 @@
+Feature: Header Utilities (Search and Notifications)
+Status: Unimplemented / Placeholders
+
+Details: 
+In the top global navigation header, the Search icon (magnifying glass) and the Notifications icon (bell) have no functionality attached to them. Clicking them does not open any search modal or notification dropdown.

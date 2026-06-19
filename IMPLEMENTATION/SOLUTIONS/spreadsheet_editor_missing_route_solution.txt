@@ -1,0 +1,8 @@
+Problem:
+The "Edit" button for spreadsheets links to /workspace/sheet-editor/<file_id>/, which is a 404.
+
+Solution Plan:
+1. The backend route for the sheet editor is actually defined in AI/urls.py under the path 'sheet-editor/<path:filename>/', which means the full URL is `/ai/sheet-editor/<file_id>/`.
+2. Open the frontend Javascript handling the workspace interactions (likely `static/user/js/workspace.js`).
+3. Find where the "Edit" button's click event or href is generated for excel/csv files.
+4. Update the URL path from `/workspace/sheet-editor/` to `/ai/sheet-editor/`.

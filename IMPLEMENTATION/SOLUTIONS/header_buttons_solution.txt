@@ -1,0 +1,7 @@
+Problem:
+Search and Notifications buttons in the header have no functionality.
+
+Solution Plan:
+1. Open pages/partials/_header.html (or wherever the header navigation is defined).
+2. For the Search button: Add a javascript click handler that opens a global search modal (overlay). The modal should have an input field that triggers a frontend filter of files/products, or sends an ajax request to a global search endpoint.
+3. For the Notifications button: Add a dropdown menu div that is toggled on click. Populate it with recent activity (e.g. recent transactions or AI generations). For now, it could just display a "No new notifications" message.

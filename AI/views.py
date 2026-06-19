@@ -27,7 +27,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.conf import settings
 from django.shortcuts import render
 
-from .gemini_service import send_message, clear_session, generate_sheet_ops
+from .gemini_service import send_message, generate_sheet_ops
 from .ai_tools import _workspace_root, _safe_path, list_files
 
 
@@ -144,8 +144,6 @@ def delete_chat_session_api(request, session_id):
     except AIChatSession.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Session not found.'}, status=404)
 
-    # Also clear the in-memory Gemini session
-    clear_session(f'db_session_{session_id}')
     session.delete()
     return JsonResponse({'status': 'ok', 'message': 'Session deleted.'})
 
@@ -193,46 +191,36 @@ def chat_api(request):
         except AIChatSession.DoesNotExist:
             db_session = None
 
-    # Use a stable Gemini session key: either tied to DB session, or Django session
+    # Prepare stateless history array
+    messages_data = []
     if db_session:
-        history_key = f'db_session_{db_session.id}'
-        from .gemini_service import rebuild_memory_history
         db_messages = db_session.messages.order_by('created_at').values('role', 'content')
-        rebuild_memory_history(history_key, list(db_messages))
+        messages_data = list(db_messages)
     else:
-        history_key = _get_session_id(request)
+        messages_data = request.session.get('ai_chat_history', [])
 
     workspace_id = _get_workspace_id(request)
-    result = send_message(history_key, workspace_id, prompt_text)
+    
+    from asgiref.sync import async_to_sync
+    result = async_to_sync(send_message)(messages_data, workspace_id, prompt_text)
 
-    # Persist to DB if a session was resolved
-    if db_session and result.get('status') == 'ok':
-        from .models import AIChatMessage
+    # Persist the new turns
+    if result.get('status') == 'ok':
+        if db_session:
+            from .models import AIChatMessage
+            AIChatMessage.objects.create(session=db_session, role='user', content=user_message, file_actions=[])
+            AIChatMessage.objects.create(session=db_session, role='model', content=result.get('response', ''), file_actions=result.get('file_actions', []))
 
-        # Save user message
-        AIChatMessage.objects.create(
-            session=db_session,
-            role='user',
-            content=user_message,
-            file_actions=[],
-        )
-
-        # Save AI response
-        AIChatMessage.objects.create(
-            session=db_session,
-            role='model',
-            content=result.get('response', ''),
-            file_actions=result.get('file_actions', []),
-        )
-
-        # Auto-generate session title from the first user message
-        if db_session.title == 'New Chat':
-            # Use first 60 chars of first message as title
-            db_session.title = user_message[:60].strip()
-            db_session.save(update_fields=['title', 'updated_at'])
+            if db_session.title == 'New Chat':
+                db_session.title = user_message[:60].strip()
+                db_session.save(update_fields=['title', 'updated_at'])
+            else:
+                db_session.save(update_fields=['updated_at'])
         else:
-            # Just update the updated_at timestamp
-            db_session.save(update_fields=['updated_at'])
+            messages_data.append({'role': 'user', 'content': user_message})
+            messages_data.append({'role': 'model', 'content': result.get('response', '')})
+            request.session['ai_chat_history'] = messages_data[-40:]
+            request.session.modified = True
 
     return JsonResponse(result)
 
@@ -241,24 +229,11 @@ def chat_api(request):
 @require_POST
 def clear_chat_api(request):
     """
-    Clear the current chat session's in-memory context.
-    Expects optional JSON body: { "session_id": <int> }
-    Does NOT delete DB records — just resets Gemini's in-memory history.
+    Clear the current guest session's memory.
     """
-    if not request.user.is_authenticated:
-        return _auth_required_response()
-
-    try:
-        body = json.loads(request.body) if request.body else {}
-    except json.JSONDecodeError:
-        body = {}
-
-    db_session_id = body.get('session_id')
-    if db_session_id:
-        clear_session(f'db_session_{db_session_id}')
-    else:
-        session_id = _get_session_id(request)
-        clear_session(session_id)
+    if 'ai_chat_history' in request.session:
+        del request.session['ai_chat_history']
+        request.session.modified = True
 
     return JsonResponse({'status': 'ok', 'message': 'Chat context cleared.'})
 
@@ -458,7 +433,8 @@ def sheet_edit_api(request):
     if not sheet_data:
         return JsonResponse({'status': 'error', 'message': 'No sheet data provided.'}, status=400)
 
-    result = generate_sheet_ops(sheet_data, prompt)
+    from asgiref.sync import async_to_sync
+    result = async_to_sync(generate_sheet_ops)(sheet_data, prompt)
 
     if result['status'] != 'ok':
         return JsonResponse(result, status=500)

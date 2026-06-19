@@ -1,0 +1,8 @@
+Problem:
+Clicking the "History" tab in the AI Chat returns a 500 Internal Server Error.
+
+Solution Plan:
+1. The error log shows `django.db.utils.OperationalError: no such table: AI_aichatsession`. The database table for the AI sessions does not exist.
+2. Run `python manage.py makemigrations AI` to ensure migration files exist for the AI models.
+3. Run `python manage.py migrate` to create the missing `AI_aichatsession` and `AI_aichatmessage` tables in the database.
+4. Verify the API /ai/api/sessions/ returns a 200 OK after the tables are created.

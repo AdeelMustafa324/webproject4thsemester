@@ -1,0 +1,11 @@
+Problem:
+The Quick Tools links (Image to Text, Merge PDF) on the Dashboard link to href="#".
+
+Solution Plan:
+1. Open pages/user/dashboard.html.
+2. Locate the "Quick Tools" card section.
+3. Update the links to point to the actual available tool routes:
+   - "PDF to Word" -> `{% url 'core_app:tool_pdf_to_word' %}`
+   - "Word to PDF" -> `{% url 'core_app:tool_word_to_pdf' %}`
+   - "Excel to CSV" -> `{% url 'core_app:tool_excel_to_csv' %}`
+4. Remove the unused placeholders (like "Image to Text") if no backend route exists for them yet, or leave them disabled with a "Coming Soon" badge.

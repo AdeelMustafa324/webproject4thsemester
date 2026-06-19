@@ -29,13 +29,12 @@
 
         <div class="action-section">
             {% if has_purchased %}
-            <div class="alert success">You own this product!</div>
-            <div class="action-buttons">
-                <button type="button" class="btn-edit btn-edit--disabled" data-action="edit-coming-soon">
-                    Edit in Browser
-                    <span class="badge badge--soon">Coming Soon</span>
-                </button>
-                {% if product.file_url %}
+              <div class="alert success">You own this product!</div>
+              <div class="action-buttons">
+                  <a href="{% url 'core_app:import_template' product.id %}" class="btn-edit" data-action="edit-product">
+                      <i class="lucide lucide-edit"></i> Edit in Browser
+                  </a>
+                  {% if product.file_url %}
                 <a href="{{ product.file_url.url }}" target="_blank" class="btn-secondary">Download</a>
                 {% endif %}
             </div>
