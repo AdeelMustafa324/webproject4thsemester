@@ -23,8 +23,26 @@
       </nav>
     </div>
     <div class="nav-right">
-      <button class="icon-btn" onclick="alert('Global Search: Coming Soon'); return false;"><i class="lucide lucide-search"></i></button>
-      <button class="icon-btn has-dot" onclick="alert('Notifications: No new alerts'); return false;"><i class="lucide lucide-bell"></i></button>
+      <button class="icon-btn" id="searchToggleBtn" onclick="document.getElementById('searchModal').classList.add('open'); setTimeout(()=>document.getElementById('globalSearchInput').focus(),100); return false;"><i class="lucide lucide-search"></i></button>
+      <div class="notif-wrapper">
+        <button class="icon-btn has-dot" id="notifToggleBtn" onclick="this.parentElement.querySelector('.notif-dropdown').classList.toggle('open'); return false;"><i class="lucide lucide-bell"></i></button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header"><span>Notifications</span><button onclick="this.closest('.notif-dropdown').classList.remove('open')">&times;</button></div>
+          <div class="notif-body">
+            {% for tx in transactions %}
+            <div class="notif-item">
+              <div class="notif-icon {% if tx.transaction_type == 'purchase_connects' %}notif-in{% else %}notif-out{% endif %}"><i class="lucide lucide-{% if tx.transaction_type == 'purchase_connects' %}trending-up{% else %}trending-down{% endif %}"></i></div>
+              <div class="notif-text">
+                <span>{{ tx.get_transaction_type_display }}</span>
+                <small>{% if tx.product %}{{ tx.product.title }} · {% endif %}{{ tx.timestamp|timesince }} ago</small>
+              </div>
+            </div>
+            {% empty %}
+            <div class="notif-empty"><i class="lucide lucide-bell-off"></i><span>No new notifications</span></div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
       <button class="connects-btn"><i class="lucide lucide-zap"></i> Connects: {{ user.connects_balance }}</button>
       <form action="{% url 'core_app:logout' %}" method="post" style="display:inline; margin:0;">
           {% csrf_token %}
@@ -48,7 +66,7 @@
 
     <p class="side-label">Overview</p>
     <a href="{% url 'core_app:dashboard' %}" class="side-link active"><i class="lucide lucide-layout-dashboard"></i> Dashboard</a>
-    <a href="#" class="side-link" onclick="alert('Analytics: Coming Soon'); return false;"><i class="lucide lucide-activity"></i> Analytics</a>
+    <a href="{% url 'core_app:dashboard' %}" class="side-link"><i class="lucide lucide-activity"></i> Analytics</a>
 
     <p class="side-label">Conversion Tools</p>
     <a href="{% url 'core_app:tool_pdf_to_word' %}" class="side-link"><i class="lucide lucide-wrench"></i> All Tools</a>
@@ -60,7 +78,7 @@
 
     <p class="side-label">Marketplace</p>
     <a href="{% url 'core_app:marketplace' %}" class="side-link"><i class="lucide lucide-store"></i> Browse Products</a>
-    <a href="#" class="side-link" onclick="alert('My Purchases: Coming Soon'); return false;"><i class="lucide lucide-shopping-bag"></i> My Purchases</a>
+    <a href="{% url 'core_app:dashboard' %}#your-templates" class="side-link" onclick="document.getElementById('your-templates')?.scrollIntoView({behavior:'smooth'}); return false;"><i class="lucide lucide-shopping-bag"></i> My Purchases</a>
   </aside>
 
   <!-- MAIN -->
@@ -167,7 +185,7 @@
     </section>
 
     <!-- TEMPLATES + TRANSACTIONS -->
-    <section class="grid-two">
+    <section class="grid-two" id="your-templates">
       <div class="card section">
         <div class="section-head">
           <div>
@@ -274,4 +292,55 @@
     <footer class="foot">© 2026 SkipStep · Built for productivity</footer>
   </main>
 </div>
+
+<!-- Global Search Modal -->
+<div class="search-modal-overlay" id="searchModal">
+  <div class="search-modal">
+    <div class="search-modal-header">
+      <i class="lucide lucide-search"></i>
+      <input type="text" id="globalSearchInput" placeholder="Search files, products, tools..." autocomplete="off">
+      <button class="search-close" onclick="document.getElementById('searchModal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="search-results" id="searchResults">
+      <div class="search-section">
+        <p class="search-section-title">Quick Links</p>
+        <a href="{% url 'core_app:workspace' %}" class="search-result-item"><i class="lucide lucide-folder"></i> My Workspace</a>
+        <a href="{% url 'core_app:marketplace' %}" class="search-result-item"><i class="lucide lucide-store"></i> Marketplace</a>
+        <a href="{% url 'core_app:tool_pdf_to_word' %}" class="search-result-item"><i class="lucide lucide-file-text"></i> PDF to Word</a>
+        <a href="{% url 'core_app:tool_word_to_pdf' %}" class="search-result-item"><i class="lucide lucide-file-output"></i> Word to PDF</a>
+        <a href="{% url 'core_app:tool_excel_to_csv' %}" class="search-result-item"><i class="lucide lucide-table"></i> Excel to CSV</a>
+        <a href="{% url 'core_app:store' %}" class="search-result-item"><i class="lucide lucide-zap"></i> Buy Connects</a>
+      </div>
+    </div>
+    <div class="search-footer"><kbd>ESC</kbd> to close · <kbd>↵</kbd> to select</div>
+  </div>
+</div>
+
+<script>
+// Close search on ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('searchModal')?.classList.remove('open');
+    document.getElementById('notifDropdown')?.classList.remove('open');
+  }
+});
+// Close search on overlay click
+document.getElementById('searchModal')?.addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+// Close notifications on outside click
+document.addEventListener('click', function(e) {
+  const wrapper = document.querySelector('.notif-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('notifDropdown')?.classList.remove('open');
+  }
+});
+// Simple search filter
+document.getElementById('globalSearchInput')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.search-result-item').forEach(item => {
+    item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
 {% endblock %}

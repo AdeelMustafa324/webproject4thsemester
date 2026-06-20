@@ -19,6 +19,7 @@ File tools:
 
 import json
 import os
+import shutil
 from pathlib import Path
 
 from django.http import JsonResponse, FileResponse, Http404
@@ -26,6 +27,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.conf import settings
 from django.shortcuts import render
+from django.core.files.base import ContentFile
 
 from .gemini_service import send_message, generate_sheet_ops
 from .ai_tools import _workspace_root, _safe_path, list_files
@@ -402,6 +404,143 @@ def save_file_api(request, filename):
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON.'}, status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+
+@csrf_exempt
+def upload_chat_file(request):
+    """
+    Upload a file from the AI chat. Saves it to:
+    1. The user's AI workspace (so AI tools can read/edit it)
+    2. The user's DB WorkspaceFile (so it appears in their workspace page)
+    Returns the file content (text) so it can be injected into the AI conversation.
+    """
+    if not request.user.is_authenticated:
+        return _auth_required_response()
+
+    if request.method != 'POST' or not request.FILES.get('file'):
+        return JsonResponse({'status': 'error', 'message': 'No file provided.'}, status=400)
+
+    uploaded_file = request.FILES['file']
+    filename = uploaded_file.name
+    max_size = 5 * 1024 * 1024  # 5MB limit
+
+    if uploaded_file.size > max_size:
+        return JsonResponse({'status': 'error', 'message': 'File too large. Maximum 5MB.'}, status=413)
+
+    workspace_id = _get_workspace_id(request)
+
+    # 1. Save to AI workspace directory so AI tools can access it
+    from .ai_tools import _workspace_root, _safe_path
+    ai_root = _workspace_root(workspace_id)
+    target_path = ai_root / filename
+    # Avoid overwriting — add suffix if needed
+    counter = 1
+    base, ext = os.path.splitext(filename)
+    while target_path.exists():
+        filename = f"{base}_{counter}{ext}"
+        target_path = ai_root / filename
+        counter += 1
+
+    with open(target_path, 'wb') as f:
+        for chunk in uploaded_file.chunks():
+            f.write(chunk)
+
+    # 2. Also save to DB WorkspaceFile so it shows on the workspace page
+    try:
+        from core_app.models import WorkspaceFile
+        ws_file = WorkspaceFile(
+            user=request.user,
+            session_key='',
+            original_name=filename,
+            source='uploaded',
+            conversion_type='ai_upload',
+        )
+        uploaded_file.seek(0)  # Reset file pointer
+        ws_file.file.save(filename, ContentFile(uploaded_file.read()), save=True)
+    except Exception as e:
+        print(f'[AI] WorkspaceFile save failed (non-critical): {e}')
+
+    # 3. Read the file content for the AI
+    content = ''
+    file_type = 'text'
+    try:
+        low = filename.lower()
+        if low.endswith('.xlsx') or low.endswith('.xls'):
+            import openpyxl
+            import io
+            import csv
+            wb = openpyxl.load_workbook(target_path, data_only=True)
+            ws = wb.active
+            output = io.StringIO()
+            writer = csv.writer(output)
+            for row in ws.iter_rows(values_only=True):
+                writer.writerow([str(cell) if cell is not None else '' for cell in row])
+            content = output.getvalue()
+            file_type = 'spreadsheet'
+        elif low.endswith('.csv'):
+            content = target_path.read_text(encoding='utf-8')
+            file_type = 'csv'
+        elif low.endswith('.docx'):
+            import docx
+            doc = docx.Document(target_path)
+            content = '\n'.join([p.text for p in doc.paragraphs])
+            file_type = 'document'
+        elif low.endswith('.pdf'):
+            content = '[PDF file uploaded — binary content cannot be displayed as text]'
+            file_type = 'pdf'
+        elif low.endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg')):
+            content = '[Image file uploaded]'
+            file_type = 'image'
+        else:
+            content = target_path.read_text(encoding='utf-8')
+            file_type = 'text'
+    except UnicodeDecodeError:
+        content = '[Binary file — content cannot be read as text]'
+        file_type = 'binary'
+    except Exception as e:
+        content = f'[Error reading file: {str(e)}]'
+
+    # Cap content size
+    if len(content) > 8000:
+        content = content[:8000] + '\n... [content truncated]'
+
+    return JsonResponse({
+        'status': 'ok',
+        'filename': filename,
+        'file_type': file_type,
+        'content': content,
+        'size_bytes': uploaded_file.size,
+        'message': f'File "{filename}" uploaded successfully.',
+    })
+
+
+@require_GET
+def list_user_workspace_files(request):
+    """
+    Return a list of ALL the user's workspace files (from DB) so the AI
+    can reference and work with them.
+    """
+    if not request.user.is_authenticated:
+        return _auth_required_response()
+
+    from core_app.models import WorkspaceFile
+    files = WorkspaceFile.objects.filter(user=request.user).order_by('-created_at')[:100]
+    return JsonResponse({
+        'status': 'ok',
+        'files': [
+            {
+                'id': f.id,
+                'name': f.original_name,
+                'source': f.source,
+                'type': f.conversion_type,
+                'size_bytes': f.file.size if f.file else 0,
+                'created_at': f.created_at.isoformat(),
+                'download_url': f.file.url if f.file else '',
+            }
+            for f in files
+        ],
+    })
 
 
 def sheet_editor_page(request, filename):

@@ -29,6 +29,9 @@
     const fileListEl    = document.getElementById('aiFileList');
     const historyListEl = document.getElementById('aiHistoryList');
     const sessionTitleEl = document.getElementById('aiSessionTitle');
+    const attachBtn     = document.getElementById('aiAttachBtn');
+    const fileInput     = document.getElementById('aiFileInput');
+    const attachmentsEl = document.getElementById('aiChatAttachments');
 
     if (!fab || !chatContainer) return;
 
@@ -38,6 +41,7 @@
     let isOpen          = false;
     let isSending       = false;
     let currentSessionId = null;   // DB session ID (int), null = ephemeral
+    let pendingFile     = null;    // { filename, content, file_type, size_bytes }
     const MAX_MESSAGE_CHARS = 2000;
 
     if (inputEl) inputEl.maxLength = MAX_MESSAGE_CHARS;
@@ -198,6 +202,73 @@
         inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
     });
 
+    // -----------------------------------------------------------------------
+    // File Attach
+    // -----------------------------------------------------------------------
+    attachBtn?.addEventListener('click', () => {
+        fileInput?.click();
+    });
+
+    fileInput?.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        fileInput.value = ''; // Reset so same file can be re-selected
+
+        // Show uploading state
+        showAttachmentPreview(file.name, true);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('/ai/api/upload-chat/', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                pendingFile = {
+                    filename: data.filename,
+                    content: data.content,
+                    file_type: data.file_type,
+                    size_bytes: data.size_bytes,
+                };
+                showAttachmentPreview(data.filename, false);
+            } else {
+                clearAttachment();
+                appendMessage('bot', `Failed to upload: ${data.message}`);
+            }
+        } catch (err) {
+            clearAttachment();
+            appendMessage('bot', 'Network error while uploading file.');
+        }
+    });
+
+    function showAttachmentPreview(filename, isUploading) {
+        if (!attachmentsEl) return;
+        attachmentsEl.style.display = 'flex';
+        attachmentsEl.innerHTML = `
+            <div class="ai-attach-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="ai-attach-name">${escapeHtml(filename)}</span>
+                ${isUploading ? '<span class="ai-attach-status">Uploading...</span>' : '<span class="ai-attach-status ai-attach-ready">Ready</span>'}
+                <button class="ai-attach-remove" title="Remove" onclick="return false;">&times;</button>
+            </div>
+        `;
+        const removeBtn = attachmentsEl.querySelector('.ai-attach-remove');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', clearAttachment);
+        }
+    }
+
+    function clearAttachment() {
+        pendingFile = null;
+        if (attachmentsEl) {
+            attachmentsEl.style.display = 'none';
+            attachmentsEl.innerHTML = '';
+        }
+    }
+
     async function handleSend() {
         const text = inputEl.value.trim();
         if (!text || isSending) return;
@@ -210,7 +281,17 @@
         const welcome = messagesEl.querySelector('.ai-chat-welcome');
         if (welcome) welcome.remove();
 
-        appendMessage('user', text);
+        // Build the display text and the AI prompt
+        let displayText = text;
+        let promptText = text;
+
+        if (pendingFile) {
+            displayText = `📎 ${pendingFile.filename}\n${text}`;
+            promptText = `[The user has uploaded a file named "${pendingFile.filename}" (type: ${pendingFile.file_type}, ${formatBytes(pendingFile.size_bytes)}). The file is now in your workspace and you can use read_file/edit_file tools on it. Here is the file content:]\n\n--- FILE CONTENT: ${pendingFile.filename} ---\n${pendingFile.content}\n--- END FILE ---\n\nUser message: ${text}`;
+        }
+
+        appendMessage('user', displayText);
+        clearAttachment();
         inputEl.value = '';
         inputEl.style.height = 'auto';
         isSending = true;
@@ -219,7 +300,7 @@
         const typingEl = showTyping();
 
         try {
-            const payload = { message: text };
+            const payload = { message: promptText };
             if (currentSessionId) payload.session_id = currentSessionId;
             if (window.SKIPSTEP_ACTIVE_FILE) payload.active_file = window.SKIPSTEP_ACTIVE_FILE;
 
@@ -586,7 +667,7 @@
             <div class="ai-chat-chips">
                 <button class="ai-chat-chip">Create a spreadsheet</button>
                 <button class="ai-chat-chip">List my files</button>
-                <button class="ai-chat-chip">Write a report</button>
+                <button class="ai-chat-chip">Summarize a file</button>
                 <button class="ai-chat-chip">Help me edit a file</button>
             </div>
         </div>`;

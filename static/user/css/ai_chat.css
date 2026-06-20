@@ -747,3 +747,99 @@
     text-overflow: ellipsis;
     max-width: 180px;
 }
+
+/* ── File Attach Button ──────────────────────────────────────────────────── */
+.ai-chat-attach-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--color-white-off, #f5f5f5);
+    border: 1.5px solid #e0e0e0;
+    color: var(--color-text-light, #888);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.ai-chat-attach-btn:hover {
+    background: var(--color-gold, #d4af37);
+    border-color: var(--color-gold, #d4af37);
+    color: var(--color-navy, #0a192f);
+}
+
+.ai-chat-attach-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Attachment Preview Strip ────────────────────────────────────────────── */
+.ai-chat-attachments {
+    padding: 8px 16px 0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.ai-attach-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(10,25,47,0.04), rgba(10,25,47,0.08));
+    border: 1px solid rgba(10,25,47,0.12);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    animation: ai-msg-in 0.3s ease;
+}
+
+.ai-attach-chip svg {
+    width: 16px;
+    height: 16px;
+    color: var(--color-gold, #d4af37);
+    flex-shrink: 0;
+}
+
+.ai-attach-name {
+    font-weight: 600;
+    color: var(--color-navy, #0a192f);
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ai-attach-status {
+    font-size: 0.7rem;
+    color: var(--color-text-light, #888);
+    font-weight: 500;
+}
+
+.ai-attach-status.ai-attach-ready {
+    color: #28a745;
+}
+
+.ai-attach-remove {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(220,38,38,0.1);
+    color: #dc2626;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.ai-attach-remove:hover {
+    background: #dc2626;
+    color: white;
+}

@@ -17,6 +17,8 @@ urlpatterns = [
 
     # ── File Tools ───────────────────────────────────────────────────────
     path('api/files/', views.list_files_api, name='list_files_api'),
+    path('api/upload-chat/', views.upload_chat_file, name='upload_chat_file'),
+    path('api/user-files/', views.list_user_workspace_files, name='list_user_workspace_files'),
     path('api/download/<path:filename>/', views.download_file, name='download_file'),
     path('api/read/<path:filename>/', views.read_file_api, name='read_file_api'),
     path('api/save/<path:filename>/', views.save_file_api, name='save_file_api'),
