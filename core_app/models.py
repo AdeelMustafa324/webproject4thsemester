@@ -70,3 +70,20 @@ class WorkspaceFile(models.Model):
 
     def __str__(self):
         return self.original_name
+
+
+class DesignProject(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='designs')
+    title = models.CharField(max_length=200, default='Untitled Design')
+    canvas_json = models.TextField(default='{}')
+    thumbnail = models.ImageField(upload_to='designs/thumbnails/', blank=True, null=True)
+    canvas_width = models.IntegerField(default=1080)
+    canvas_height = models.IntegerField(default=1080)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.user.username})"

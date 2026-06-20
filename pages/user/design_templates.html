@@ -1,0 +1,86 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Design Templates{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css">
+<link rel="stylesheet" href="{% static 'user/css/design_templates.css' %}">
+{% endblock %}
+
+{% block layout %}
+<!-- NAVBAR -->
+<header class="tpl-navbar">
+  <div class="tpl-nav-inner">
+    <div class="tpl-nav-left">
+      <a href="{% url 'core_app:dashboard' %}" class="tpl-brand">SkipStep</a>
+      <nav class="tpl-nav-links">
+        <a href="{% url 'core_app:marketplace' %}">Marketplace</a>
+        <a href="{% url 'core_app:tool_pdf_to_word' %}">Tools</a>
+        <a href="{% url 'core_app:workspace' %}">Workspace</a>
+        <a href="{% url 'core_app:dashboard' %}">Dashboard</a>
+        <a href="{% url 'core_app:design_templates' %}" class="active">Design Templates</a>
+      </nav>
+    </div>
+    <div class="tpl-nav-right">
+      <a href="{% url 'core_app:design_studio' %}" class="tpl-create-btn"><i class="lucide lucide-plus"></i> Create Design</a>
+      {% if user.is_authenticated %}
+      <form action="{% url 'core_app:logout' %}" method="post" style="display:inline;margin:0;">{% csrf_token %}<button type="submit" class="tpl-logout-btn"><i class="lucide lucide-log-out"></i></button></form>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="tpl-hero">
+  <div class="tpl-hero-bg">
+    <div class="tpl-hero-glow tpl-glow-1"></div>
+    <div class="tpl-hero-glow tpl-glow-2"></div>
+    <div class="tpl-hero-glow tpl-glow-3"></div>
+  </div>
+  <div class="tpl-hero-content">
+    <h1>Design Templates</h1>
+    <p>Start with a professional template and customize it in our Design Studio</p>
+    <div class="tpl-search-bar">
+      <i class="lucide lucide-search"></i>
+      <input type="text" id="templateSearch" placeholder="Search templates..." autocomplete="off">
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<div class="tpl-container">
+  <div class="tpl-categories" id="categoryTabs">
+    <button class="tpl-cat-btn active" data-cat="all">All</button>
+    <button class="tpl-cat-btn" data-cat="social-media"><i class="lucide lucide-share-2"></i> Social Media</button>
+    <button class="tpl-cat-btn" data-cat="presentation"><i class="lucide lucide-presentation"></i> Presentations</button>
+    <button class="tpl-cat-btn" data-cat="poster"><i class="lucide lucide-image"></i> Posters</button>
+    <button class="tpl-cat-btn" data-cat="business-card"><i class="lucide lucide-credit-card"></i> Business Cards</button>
+    <button class="tpl-cat-btn" data-cat="resume"><i class="lucide lucide-file-text"></i> Resumes</button>
+    <button class="tpl-cat-btn" data-cat="flyer"><i class="lucide lucide-megaphone"></i> Flyers</button>
+    <button class="tpl-cat-btn" data-cat="invitation"><i class="lucide lucide-mail"></i> Invitations</button>
+    <button class="tpl-cat-btn" data-cat="logo"><i class="lucide lucide-hexagon"></i> Logos</button>
+  </div>
+
+  <!-- TEMPLATE GRID -->
+  <div class="tpl-grid" id="templateGrid">
+    <!-- Templates are injected by JS -->
+  </div>
+
+  <div class="tpl-empty" id="noResults" style="display:none;">
+    <i class="lucide lucide-search-x"></i>
+    <h3>No templates found</h3>
+    <p>Try a different search term or category</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="tpl-footer">
+  <p>© 2026 SkipStep · Build stunning designs in minutes</p>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/design_templates.js' %}"></script>
+{% endblock %}

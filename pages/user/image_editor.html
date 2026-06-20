@@ -1,0 +1,556 @@
+{% extends 'user/base.html' %}
+{% load static %}
+
+{% block title %}Image Editor{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css">
+<link rel="stylesheet" href="{% static 'user/css/image_editor.css' %}">
+{% endblock %}
+
+{% block layout %}
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="{% url 'core_app:dashboard' %}" class="brand">SkipStep</a>
+      <nav class="nav-links">
+        <a href="{% url 'core_app:workspace' %}"><i class="lucide lucide-arrow-left"></i> Back to Workspace</a>
+      </nav>
+    </div>
+    <div class="nav-center">
+      <span class="editor-title" id="editorTitle">{{ filename|default:"Untitled Image" }}</span>
+    </div>
+    <div class="nav-right">
+      <button class="undo-redo-btn" id="undoBtn" title="Undo (Ctrl+Z)" disabled><i class="lucide lucide-undo-2"></i></button>
+      <button class="undo-redo-btn" id="redoBtn" title="Redo (Ctrl+Y)" disabled><i class="lucide lucide-redo-2"></i></button>
+      <div class="nav-divider"></div>
+      <button class="save-btn" id="saveBtn"><i class="lucide lucide-save"></i> Save</button>
+      <button class="export-btn" id="exportBtn"><i class="lucide lucide-download"></i> Export</button>
+    </div>
+  </div>
+</header>
+
+<div class="editor-layout">
+
+  <!-- LEFT TOOLS PANEL -->
+  <aside class="tools-panel" id="toolsPanel">
+    <div class="tools-list">
+      <button class="tool-btn active" data-tool="select" title="Select & Move">
+        <i class="lucide lucide-mouse-pointer-2"></i>
+        <span>Select</span>
+      </button>
+      <button class="tool-btn" data-tool="crop" title="Crop">
+        <i class="lucide lucide-crop"></i>
+        <span>Crop</span>
+      </button>
+      <button class="tool-btn" data-tool="rotate" title="Rotate & Flip">
+        <i class="lucide lucide-rotate-cw"></i>
+        <span>Rotate</span>
+      </button>
+      <button class="tool-btn" data-tool="filters" title="Filters">
+        <i class="lucide lucide-sparkles"></i>
+        <span>Filters</span>
+      </button>
+      <button class="tool-btn" data-tool="adjust" title="Adjustments">
+        <i class="lucide lucide-sun"></i>
+        <span>Adjust</span>
+      </button>
+      <button class="tool-btn" data-tool="text" title="Add Text">
+        <i class="lucide lucide-type"></i>
+        <span>Text</span>
+      </button>
+      <button class="tool-btn" data-tool="draw" title="Draw & Annotate">
+        <i class="lucide lucide-pen-tool"></i>
+        <span>Draw</span>
+      </button>
+      <button class="tool-btn" data-tool="shapes" title="Shapes">
+        <i class="lucide lucide-shapes"></i>
+        <span>Shapes</span>
+      </button>
+      <button class="tool-btn" data-tool="stickers" title="Stickers & Overlays">
+        <i class="lucide lucide-smile"></i>
+        <span>Stickers</span>
+      </button>
+    </div>
+
+    <div class="tools-bottom">
+      <button class="tool-btn" id="uploadNewBtn" title="Upload New Image">
+        <i class="lucide lucide-image-plus"></i>
+        <span>Upload</span>
+      </button>
+      <input type="file" id="newImageInput" accept="image/*" style="display:none;">
+    </div>
+  </aside>
+
+  <!-- CENTER CANVAS -->
+  <main class="canvas-area" id="canvasArea">
+    <!-- Drop zone (shown when no image) -->
+    <div class="canvas-dropzone" id="canvasDropzone">
+      <div class="dropzone-content">
+        <i class="lucide lucide-image-plus"></i>
+        <h3>Open an image to edit</h3>
+        <p>Drag & drop an image here, or click to upload</p>
+        <button class="dropzone-btn" id="dropzoneUploadBtn">Choose Image</button>
+        <input type="file" id="dropzoneFileInput" accept="image/*" style="display:none;">
+      </div>
+    </div>
+
+    <!-- Canvas container (shown when image is loaded) -->
+    <div class="canvas-container" id="canvasContainer" style="display:none;">
+      <canvas id="imageCanvas"></canvas>
+      <!-- Crop overlay -->
+      <div class="crop-overlay" id="cropOverlay" style="display:none;">
+        <div class="crop-box" id="cropBox">
+          <div class="crop-handle crop-handle-nw" data-handle="nw"></div>
+          <div class="crop-handle crop-handle-ne" data-handle="ne"></div>
+          <div class="crop-handle crop-handle-sw" data-handle="sw"></div>
+          <div class="crop-handle crop-handle-se" data-handle="se"></div>
+          <div class="crop-handle crop-handle-n" data-handle="n"></div>
+          <div class="crop-handle crop-handle-s" data-handle="s"></div>
+          <div class="crop-handle crop-handle-e" data-handle="e"></div>
+          <div class="crop-handle crop-handle-w" data-handle="w"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div class="zoom-controls" id="zoomControls" style="display:none;">
+      <button class="zoom-btn" id="zoomOutBtn"><i class="lucide lucide-minus"></i></button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="zoom-btn" id="zoomInBtn"><i class="lucide lucide-plus"></i></button>
+      <button class="zoom-btn" id="zoomFitBtn" title="Fit to screen"><i class="lucide lucide-maximize-2"></i></button>
+    </div>
+  </main>
+
+  <!-- RIGHT PROPERTIES PANEL -->
+  <aside class="props-panel" id="propsPanel">
+
+    <!-- Select tool props -->
+    <div class="props-section" data-for="select">
+      <h3 class="props-title">Image Info</h3>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">Width</span><span class="info-value" id="infoWidth">—</span></div>
+        <div class="info-item"><span class="info-label">Height</span><span class="info-value" id="infoHeight">—</span></div>
+        <div class="info-item"><span class="info-label">Format</span><span class="info-value" id="infoFormat">—</span></div>
+      </div>
+    </div>
+
+    <!-- Crop tool props -->
+    <div class="props-section" data-for="crop" style="display:none;">
+      <h3 class="props-title">Crop</h3>
+      <p class="props-subtitle">Select aspect ratio</p>
+      <div class="crop-presets">
+        <button class="crop-preset active" data-ratio="free">Free</button>
+        <button class="crop-preset" data-ratio="1:1">1:1</button>
+        <button class="crop-preset" data-ratio="16:9">16:9</button>
+        <button class="crop-preset" data-ratio="9:16">9:16</button>
+        <button class="crop-preset" data-ratio="4:3">4:3</button>
+        <button class="crop-preset" data-ratio="3:4">3:4</button>
+        <button class="crop-preset" data-ratio="4:5">4:5</button>
+        <button class="crop-preset" data-ratio="2:1">2:1</button>
+      </div>
+      <div class="crop-actions">
+        <button class="btn-apply" id="cropApplyBtn"><i class="lucide lucide-check"></i> Apply Crop</button>
+        <button class="btn-cancel" id="cropCancelBtn"><i class="lucide lucide-x"></i> Cancel</button>
+      </div>
+    </div>
+
+    <!-- Rotate tool props -->
+    <div class="props-section" data-for="rotate" style="display:none;">
+      <h3 class="props-title">Rotate & Flip</h3>
+      <div class="rotate-grid">
+        <button class="rotate-action" data-action="rotate-cw"><i class="lucide lucide-rotate-cw"></i> 90° CW</button>
+        <button class="rotate-action" data-action="rotate-ccw"><i class="lucide lucide-rotate-ccw"></i> 90° CCW</button>
+        <button class="rotate-action" data-action="flip-h"><i class="lucide lucide-flip-horizontal-2"></i> Flip H</button>
+        <button class="rotate-action" data-action="flip-v"><i class="lucide lucide-flip-vertical-2"></i> Flip V</button>
+      </div>
+      <div class="slider-group">
+        <label class="slider-label">Custom Rotation</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="rotationSlider" min="-180" max="180" value="0" step="1">
+          <span class="slider-value" id="rotationValue">0°</span>
+        </div>
+        <button class="btn-apply btn-sm" id="rotationApplyBtn">Apply Rotation</button>
+      </div>
+    </div>
+
+    <!-- Filters tool props -->
+    <div class="props-section" data-for="filters" style="display:none;">
+      <h3 class="props-title">Filters</h3>
+      <div class="filters-grid" id="filtersGrid">
+        <button class="filter-card active" data-filter="none">
+          <div class="filter-preview filter-preview-none"></div>
+          <span>Original</span>
+        </button>
+        <button class="filter-card" data-filter="grayscale">
+          <div class="filter-preview filter-preview-grayscale"></div>
+          <span>Grayscale</span>
+        </button>
+        <button class="filter-card" data-filter="sepia">
+          <div class="filter-preview filter-preview-sepia"></div>
+          <span>Sepia</span>
+        </button>
+        <button class="filter-card" data-filter="vintage">
+          <div class="filter-preview filter-preview-vintage"></div>
+          <span>Vintage</span>
+        </button>
+        <button class="filter-card" data-filter="warm">
+          <div class="filter-preview filter-preview-warm"></div>
+          <span>Warm</span>
+        </button>
+        <button class="filter-card" data-filter="cool">
+          <div class="filter-preview filter-preview-cool"></div>
+          <span>Cool</span>
+        </button>
+        <button class="filter-card" data-filter="dramatic">
+          <div class="filter-preview filter-preview-dramatic"></div>
+          <span>Dramatic</span>
+        </button>
+        <button class="filter-card" data-filter="fade">
+          <div class="filter-preview filter-preview-fade"></div>
+          <span>Fade</span>
+        </button>
+        <button class="filter-card" data-filter="vivid">
+          <div class="filter-preview filter-preview-vivid"></div>
+          <span>Vivid</span>
+        </button>
+        <button class="filter-card" data-filter="noir">
+          <div class="filter-preview filter-preview-noir"></div>
+          <span>Noir</span>
+        </button>
+        <button class="filter-card" data-filter="chrome">
+          <div class="filter-preview filter-preview-chrome"></div>
+          <span>Chrome</span>
+        </button>
+        <button class="filter-card" data-filter="invert">
+          <div class="filter-preview filter-preview-invert"></div>
+          <span>Invert</span>
+        </button>
+        <button class="filter-card" data-filter="blur">
+          <div class="filter-preview filter-preview-blur"></div>
+          <span>Blur</span>
+        </button>
+        <button class="filter-card" data-filter="sharpen">
+          <div class="filter-preview filter-preview-sharpen"></div>
+          <span>Sharpen</span>
+        </button>
+        <button class="filter-card" data-filter="emboss">
+          <div class="filter-preview filter-preview-emboss"></div>
+          <span>Emboss</span>
+        </button>
+      </div>
+      <div class="slider-group" id="filterIntensity" style="display:none;">
+        <label class="slider-label">Filter Intensity</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="filterIntensitySlider" min="0" max="100" value="100">
+          <span class="slider-value" id="filterIntensityValue">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adjustments tool props -->
+    <div class="props-section" data-for="adjust" style="display:none;">
+      <h3 class="props-title">Adjustments</h3>
+      <button class="auto-adjust-btn" id="autoAdjustBtn"><i class="lucide lucide-wand-2"></i> Auto-Adjust</button>
+      <div class="adjustments-list">
+        <div class="slider-group">
+          <label class="slider-label">Brightness</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="brightness" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Contrast</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="contrast" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Saturation</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="saturation" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Exposure</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="exposure" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Temperature</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="temperature" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Tint</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="tint" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Highlights</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="highlights" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Shadows</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="shadows" min="-100" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Vignette</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" data-adj="vignette" min="0" max="100" value="0">
+            <span class="slider-value">0</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-reset" id="resetAdjBtn"><i class="lucide lucide-refresh-cw"></i> Reset All</button>
+    </div>
+
+    <!-- Text tool props -->
+    <div class="props-section" data-for="text" style="display:none;">
+      <h3 class="props-title">Add Text</h3>
+      <div class="text-presets">
+        <button class="text-preset" data-size="48" data-weight="800">Add Heading</button>
+        <button class="text-preset" data-size="28" data-weight="600">Add Subheading</button>
+        <button class="text-preset" data-size="18" data-weight="400">Add Body Text</button>
+      </div>
+      <div class="text-props" id="textProps" style="display:none;">
+        <div class="input-group">
+          <label>Font Family</label>
+          <select class="editor-select" id="fontFamily">
+            <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Impact">Impact</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Times New Roman">Times New Roman</option>
+          </select>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Size</label>
+            <input type="number" class="editor-input" id="fontSize" value="32" min="8" max="200">
+          </div>
+          <div class="input-group">
+            <label>Color</label>
+            <input type="color" class="editor-color" id="fontColor" value="#ffffff">
+          </div>
+        </div>
+        <div class="text-style-btns">
+          <button class="style-btn" id="boldBtn" title="Bold"><b>B</b></button>
+          <button class="style-btn" id="italicBtn" title="Italic"><i>I</i></button>
+          <button class="style-btn" id="underlineBtn" title="Underline"><u>U</u></button>
+        </div>
+        <div class="input-group">
+          <label>Text Outline</label>
+          <div class="input-row">
+            <input type="number" class="editor-input" id="textStrokeWidth" value="0" min="0" max="10" step="1">
+            <input type="color" class="editor-color" id="textStrokeColor" value="#000000">
+          </div>
+        </div>
+        <div class="slider-group">
+          <label class="slider-label">Opacity</label>
+          <div class="slider-row">
+            <input type="range" class="editor-slider" id="textOpacity" min="0" max="100" value="100">
+            <span class="slider-value" id="textOpacityValue">100%</span>
+          </div>
+        </div>
+        <textarea class="editor-textarea" id="textContent" placeholder="Type your text here..." rows="3"></textarea>
+        <button class="btn-apply" id="updateTextBtn"><i class="lucide lucide-check"></i> Update Text</button>
+        <button class="btn-danger-sm" id="deleteTextBtn"><i class="lucide lucide-trash-2"></i> Delete Text</button>
+      </div>
+    </div>
+
+    <!-- Draw tool props -->
+    <div class="props-section" data-for="draw" style="display:none;">
+      <h3 class="props-title">Draw</h3>
+      <div class="draw-modes">
+        <button class="draw-mode active" data-mode="brush"><i class="lucide lucide-pen-tool"></i> Brush</button>
+        <button class="draw-mode" data-mode="eraser"><i class="lucide lucide-eraser"></i> Eraser</button>
+      </div>
+      <div class="slider-group">
+        <label class="slider-label">Brush Size</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="brushSize" min="1" max="50" value="5">
+          <span class="slider-value" id="brushSizeValue">5px</span>
+        </div>
+      </div>
+      <div class="slider-group">
+        <label class="slider-label">Opacity</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="brushOpacity" min="1" max="100" value="100">
+          <span class="slider-value" id="brushOpacityValue">100%</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Brush Color</label>
+        <div class="color-swatches" id="brushSwatches">
+          <button class="swatch active" data-color="#ffffff" style="background:#ffffff;"></button>
+          <button class="swatch" data-color="#000000" style="background:#000000;"></button>
+          <button class="swatch" data-color="#e74c3c" style="background:#e74c3c;"></button>
+          <button class="swatch" data-color="#f39c12" style="background:#f39c12;"></button>
+          <button class="swatch" data-color="#2ecc71" style="background:#2ecc71;"></button>
+          <button class="swatch" data-color="#3498db" style="background:#3498db;"></button>
+          <button class="swatch" data-color="#9b59b6" style="background:#9b59b6;"></button>
+          <button class="swatch" data-color="#1abc9c" style="background:#1abc9c;"></button>
+          <button class="swatch" data-color="#e91e63" style="background:#e91e63;"></button>
+          <button class="swatch" data-color="#ff9800" style="background:#ff9800;"></button>
+        </div>
+        <input type="color" class="editor-color" id="brushColor" value="#ffffff">
+      </div>
+      <button class="btn-danger-sm" id="clearDrawBtn"><i class="lucide lucide-trash-2"></i> Clear Drawing</button>
+    </div>
+
+    <!-- Shapes tool props -->
+    <div class="props-section" data-for="shapes" style="display:none;">
+      <h3 class="props-title">Shapes</h3>
+      <div class="shapes-grid">
+        <button class="shape-btn" data-shape="rect" title="Rectangle">
+          <svg viewBox="0 0 40 40"><rect x="4" y="8" width="32" height="24" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="shape-btn" data-shape="circle" title="Circle">
+          <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="shape-btn" data-shape="triangle" title="Triangle">
+          <svg viewBox="0 0 40 40"><polygon points="20,4 36,36 4,36" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="shape-btn" data-shape="star" title="Star">
+          <svg viewBox="0 0 40 40"><polygon points="20,2 25,15 38,15 27,24 31,37 20,29 9,37 13,24 2,15 15,15" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="shape-btn" data-shape="line" title="Line">
+          <svg viewBox="0 0 40 40"><line x1="4" y1="36" x2="36" y2="4" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="shape-btn" data-shape="arrow" title="Arrow">
+          <svg viewBox="0 0 40 40"><line x1="4" y1="20" x2="32" y2="20" stroke="currentColor" stroke-width="2"/><polyline points="26,14 32,20 26,26" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Fill</label>
+          <input type="color" class="editor-color" id="shapeFill" value="#f3b942">
+        </div>
+        <div class="input-group">
+          <label>Stroke</label>
+          <input type="color" class="editor-color" id="shapeStroke" value="#0a192f">
+        </div>
+      </div>
+      <div class="slider-group">
+        <label class="slider-label">Stroke Width</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="shapeStrokeWidth" min="0" max="20" value="2">
+          <span class="slider-value" id="shapeStrokeWidthValue">2px</span>
+        </div>
+      </div>
+      <div class="slider-group">
+        <label class="slider-label">Opacity</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="shapeOpacity" min="0" max="100" value="100">
+          <span class="slider-value" id="shapeOpacityValue">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stickers tool props -->
+    <div class="props-section" data-for="stickers" style="display:none;">
+      <h3 class="props-title">Stickers & Overlays</h3>
+      <p class="props-subtitle">Click to add to canvas</p>
+      <div class="stickers-grid" id="stickersGrid">
+        <button class="sticker-btn" data-emoji="⭐">⭐</button>
+        <button class="sticker-btn" data-emoji="❤️">❤️</button>
+        <button class="sticker-btn" data-emoji="🔥">🔥</button>
+        <button class="sticker-btn" data-emoji="✨">✨</button>
+        <button class="sticker-btn" data-emoji="🎉">🎉</button>
+        <button class="sticker-btn" data-emoji="👍">👍</button>
+        <button class="sticker-btn" data-emoji="🎯">🎯</button>
+        <button class="sticker-btn" data-emoji="💡">💡</button>
+        <button class="sticker-btn" data-emoji="🚀">🚀</button>
+        <button class="sticker-btn" data-emoji="💎">💎</button>
+        <button class="sticker-btn" data-emoji="🌟">🌟</button>
+        <button class="sticker-btn" data-emoji="🎨">🎨</button>
+        <button class="sticker-btn" data-emoji="📌">📌</button>
+        <button class="sticker-btn" data-emoji="✅">✅</button>
+        <button class="sticker-btn" data-emoji="❌">❌</button>
+        <button class="sticker-btn" data-emoji="⚡">⚡</button>
+        <button class="sticker-btn" data-emoji="🏆">🏆</button>
+        <button class="sticker-btn" data-emoji="💪">💪</button>
+        <button class="sticker-btn" data-emoji="🎭">🎭</button>
+        <button class="sticker-btn" data-emoji="🌈">🌈</button>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- Export Modal -->
+<div class="editor-modal-overlay" id="exportModal">
+  <div class="editor-modal">
+    <div class="editor-modal-header">
+      <h3>Export Image</h3>
+      <button class="modal-close-btn" id="exportModalClose"><i class="lucide lucide-x"></i></button>
+    </div>
+    <div class="editor-modal-body">
+      <div class="export-option">
+        <label>Format</label>
+        <div class="export-formats">
+          <button class="format-btn active" data-format="png">PNG</button>
+          <button class="format-btn" data-format="jpeg">JPG</button>
+          <button class="format-btn" data-format="webp">WebP</button>
+        </div>
+      </div>
+      <div class="export-option" id="qualityOption" style="display:none;">
+        <label>Quality</label>
+        <div class="slider-row">
+          <input type="range" class="editor-slider" id="exportQuality" min="10" max="100" value="92">
+          <span class="slider-value" id="exportQualityValue">92%</span>
+        </div>
+      </div>
+      <div class="export-info">
+        <span id="exportDimensions">—</span>
+      </div>
+    </div>
+    <div class="editor-modal-footer">
+      <button class="btn-cancel" id="exportCancelBtn">Cancel</button>
+      <button class="btn-apply" id="exportDownloadBtn"><i class="lucide lucide-download"></i> Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="editor-loading" id="editorLoading" style="display:none;">
+  <div class="loading-spinner"></div>
+  <p>Processing...</p>
+</div>
+
+<script>
+  window.IMAGE_EDITOR_CONFIG = {
+    fileId: "{{ file_id|default:'' }}",
+    fileUrl: "{{ file_url|default:'' }}",
+    csrfToken: "{{ csrf_token }}",
+    saveUrl: "{% url 'core_app:save_edited_image' %}",
+    filename: "{{ filename|default:'Untitled Image' }}"
+  };
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'user/js/image_editor.js' %}"></script>
+{% endblock %}

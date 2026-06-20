@@ -17,6 +17,17 @@ urlpatterns = [
     path('workspace/', views.workspace, name='workspace'),
     path('workspace/doc-editor/<str:file_id>/', views.doc_editor_view, name='doc_editor'),
 
+    # Image Editor
+    path('workspace/image-editor/', views.image_editor_view, name='image_editor'),
+    path('workspace/image-editor/<str:file_id>/', views.image_editor_view, name='image_editor_file'),
+
+    # Design Studio
+    path('design-studio/', views.design_studio, name='design_studio'),
+    path('design-studio/<str:design_id>/', views.design_studio, name='design_studio_edit'),
+
+    # Design Templates
+    path('templates/', views.design_templates, name='design_templates'),
+
     # Conversion tools
     path('tools/pdf-to-word/', views.tool_pdf_to_word, name='tool_pdf_to_word'),
     path('tools/word-to-pdf/', views.tool_word_to_pdf, name='tool_word_to_pdf'),
@@ -29,6 +40,12 @@ urlpatterns = [
     path('api/workspace/<str:file_id>/read/', views.read_workspace_file, name='read_workspace_file'),
     path('api/workspace/<str:file_id>/save/', views.save_workspace_file, name='save_workspace_file'),
     path('api/workspace/<str:file_id>/rename/', views.rename_workspace_file, name='rename_workspace_file'),
+
+    # Image/Design APIs
+    path('api/image/upload/', views.upload_image, name='upload_image'),
+    path('api/image/save/', views.save_edited_image, name='save_edited_image'),
+    path('api/design/save/', views.save_design, name='save_design'),
+    path('api/design/load/<str:design_id>/', views.load_design, name='load_design'),
 
     # Manage panel
     path('manage/login/', views.manage_login, name='manage_login'),

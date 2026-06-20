@@ -257,6 +257,14 @@ function initEdit() {
                 return;
             }
 
+            // Route images to Image Editor
+            const ext = name.split('.').pop().toLowerCase();
+            const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+            if (imgExts.includes(ext)) {
+                window.location.href = `/workspace/image-editor/${encodeURIComponent(id)}/`;
+                return;
+            }
+
             // If it's a docx or doc file, redirect to the new Full Screen Doc Editor
             if (name.toLowerCase().endsWith('.docx') || name.toLowerCase().endsWith('.doc')) {
                 window.location.href = `/workspace/doc-editor/${encodeURIComponent(id)}/`;

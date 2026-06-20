@@ -751,3 +751,214 @@ def manage_users(request):
 def manage_transactions(request):
     transactions = Transaction.objects.select_related('user', 'product').order_by('-timestamp')
     return render(request, 'manage/transactions.html', {'transactions': transactions})
+
+
+# --- Image Editor, Design Studio, Templates ---
+
+IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.tiff')
+
+
+def image_editor_view(request, file_id=None):
+    """Render the image editor page. If file_id is provided, load that file."""
+    file_url = ''
+    filename = 'Untitled Image'
+
+    if file_id:
+        if str(file_id).startswith('ai_'):
+            fname = str(file_id)[3:]
+            file_url = f'/ai/api/download/{fname}/'
+            filename = fname
+        else:
+            try:
+                int_id = int(file_id)
+                files = _get_workspace_files(request)
+                ws_file = get_object_or_404(files, id=int_id)
+                file_url = ws_file.file.url
+                filename = ws_file.original_name
+            except (ValueError, TypeError):
+                pass
+
+    return render(request, 'user/image_editor.html', {
+        'file_id': file_id or '',
+        'file_url': file_url,
+        'filename': filename,
+    })
+
+
+@csrf_exempt
+def save_edited_image(request):
+    """Save an edited image (base64 data) to workspace."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method.'})
+
+    try:
+        data = json.loads(request.body)
+        image_data = data.get('image_data', '')
+        filename = data.get('filename', 'edited_image.png')
+        file_id = data.get('file_id', '')
+
+        if not image_data:
+            return JsonResponse({'success': False, 'message': 'No image data.'})
+
+        # Decode base64
+        import base64
+        # Remove data URL prefix
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+
+        image_bytes = base64.b64decode(image_data)
+
+        # Ensure proper extension
+        if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+            filename = filename.rsplit('.', 1)[0] + '.png' if '.' in filename else filename + '.png'
+
+        if file_id and not str(file_id).startswith('ai_'):
+            # Overwrite existing file
+            try:
+                int_id = int(file_id)
+                files = _get_workspace_files(request)
+                ws_file = get_object_or_404(files, id=int_id)
+                ws_file.file.save(filename, ContentFile(image_bytes), save=True)
+                return JsonResponse({'success': True, 'message': 'Image saved.', 'download_url': ws_file.file.url})
+            except (ValueError, TypeError):
+                pass
+
+        # Create new workspace file
+        ws_file = WorkspaceFile(
+            user=request.user if request.user.is_authenticated else None,
+            session_key=_ensure_session_key(request) if not request.user.is_authenticated else '',
+            original_name=filename,
+            source='uploaded',
+            conversion_type='edited',
+        )
+        ws_file.file.save(filename, ContentFile(image_bytes), save=True)
+        return JsonResponse({'success': True, 'message': 'Image saved.', 'download_url': ws_file.file.url, 'file_id': ws_file.id})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@csrf_exempt
+def upload_image(request):
+    """Upload an image directly for editing."""
+    if request.method != 'POST' or not request.FILES.get('file'):
+        return JsonResponse({'success': False, 'message': 'No file provided.'})
+
+    uploaded_file = request.FILES['file']
+    if not uploaded_file.name.lower().endswith(IMAGE_EXTENSIONS):
+        return JsonResponse({'success': False, 'message': 'Not a valid image file.'})
+
+    temp_dir = os.path.join('media', 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
+
+    unique = uuid.uuid4().hex[:8]
+    base, ext = os.path.splitext(uploaded_file.name)
+    safe_name = f"{base}_{unique}{ext}"
+    file_path = os.path.join(temp_dir, safe_name)
+
+    with open(file_path, 'wb+') as destination:
+        for chunk in uploaded_file.chunks():
+            destination.write(chunk)
+
+    ws = _save_workspace_file(request, file_path, uploaded_file.name, 'uploaded')
+    return JsonResponse({
+        'success': True,
+        'message': 'Image uploaded.',
+        'download_url': ws.file.url,
+        'file_id': ws.id,
+    })
+
+
+def design_studio(request, design_id=None):
+    """Render the design studio page."""
+    design_data = None
+    if design_id and request.user.is_authenticated:
+        try:
+            from .models import DesignProject
+            design = get_object_or_404(DesignProject, id=design_id, user=request.user)
+            design_data = {
+                'id': design.id,
+                'title': design.title,
+                'canvas_json': design.canvas_json,
+                'canvas_width': design.canvas_width,
+                'canvas_height': design.canvas_height,
+            }
+        except Exception:
+            pass
+
+    return render(request, 'user/design_studio.html', {
+        'design_id': design_id or '',
+        'design_data': json.dumps(design_data) if design_data else 'null',
+    })
+
+
+@login_required
+@csrf_exempt
+def save_design(request):
+    """Save a design (Fabric.js JSON) to the database."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method.'})
+
+    try:
+        from .models import DesignProject
+        data = json.loads(request.body)
+        design_id = data.get('design_id', '')
+        title = data.get('title', 'Untitled Design')
+        canvas_json = data.get('canvas_json', '{}')
+        canvas_width = data.get('canvas_width', 1080)
+        canvas_height = data.get('canvas_height', 1080)
+        thumbnail_data = data.get('thumbnail', '')
+
+        if design_id:
+            try:
+                design = DesignProject.objects.get(id=int(design_id), user=request.user)
+                design.title = title
+                design.canvas_json = canvas_json
+                design.canvas_width = canvas_width
+                design.canvas_height = canvas_height
+            except DesignProject.DoesNotExist:
+                design = DesignProject(
+                    user=request.user, title=title,
+                    canvas_json=canvas_json,
+                    canvas_width=canvas_width, canvas_height=canvas_height,
+                )
+        else:
+            design = DesignProject(
+                user=request.user, title=title,
+                canvas_json=canvas_json,
+                canvas_width=canvas_width, canvas_height=canvas_height,
+            )
+
+        # Save thumbnail if provided
+        if thumbnail_data and ',' in thumbnail_data:
+            import base64
+            thumb_bytes = base64.b64decode(thumbnail_data.split(',')[1])
+            design.thumbnail.save(f'design_{design.id or "new"}.png', ContentFile(thumb_bytes), save=False)
+
+        design.save()
+        return JsonResponse({'success': True, 'design_id': design.id, 'message': 'Design saved.'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@login_required
+def load_design(request, design_id):
+    """Load a saved design."""
+    from .models import DesignProject
+    design = get_object_or_404(DesignProject, id=design_id, user=request.user)
+    return JsonResponse({
+        'success': True,
+        'design': {
+            'id': design.id,
+            'title': design.title,
+            'canvas_json': design.canvas_json,
+            'canvas_width': design.canvas_width,
+            'canvas_height': design.canvas_height,
+        }
+    })
+
+
+def design_templates(request):
+    """Render the design templates gallery."""
+    return render(request, 'user/design_templates.html')

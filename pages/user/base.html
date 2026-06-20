@@ -25,6 +25,7 @@
                     {% if user.is_authenticated %}
                     <li><a href="{% url 'core_app:workspace' %}" {% if request.resolver_match.url_name == 'workspace' %}class="active"{% endif %}>Workspace</a></li>
                     <li><a href="{% url 'core_app:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Dashboard</a></li>
+                    <li><a href="{% url 'core_app:design_templates' %}" {% if request.resolver_match.url_name == 'design_templates' %}class="active"{% endif %}>Design Templates</a></li>
                     <li><a href="{% url 'core_app:store' %}" class="connects-btn">Connects: {{ user.connects_balance }}</a></li>
                     <li>
                         <form action="{% url 'core_app:logout' %}" method="post" class="logout-form">

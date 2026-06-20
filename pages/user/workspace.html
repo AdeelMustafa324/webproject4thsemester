@@ -45,6 +45,7 @@
                 {% if f.conversion_type == 'pdf2docx' or f.conversion_type == 'docx2pdf' %}&#128196;
                 {% elif f.conversion_type == 'excel2csv' %}&#128202;
                 {% elif f.conversion_type == 'ai' %}&#129302;
+                {% elif '.jpg' in f.original_name|lower or '.png' in f.original_name|lower or '.jpeg' in f.original_name|lower or '.webp' in f.original_name|lower %}&#128444;
                 {% else %}&#128193;{% endif %}
             </div>
             <div class="file-card-body">

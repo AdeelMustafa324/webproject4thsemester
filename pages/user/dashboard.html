@@ -20,6 +20,7 @@
         <a href="{% url 'core_app:tool_pdf_to_word' %}">Tools</a>
         <a href="{% url 'core_app:workspace' %}">Workspace</a>
         <a href="{% url 'core_app:dashboard' %}" class="active">Dashboard</a>
+        <a href="{% url 'core_app:design_templates' %}">Design Templates</a>
       </nav>
     </div>
     <div class="nav-right">
@@ -75,6 +76,11 @@
     <p class="side-label">Workspace</p>
     <a href="{% url 'core_app:workspace' %}" class="side-link"><i class="lucide lucide-folder"></i> My Files</a>
     <a href="#" class="side-link" onclick="document.getElementById('aiFab').click(); return false;"><i class="lucide lucide-sparkles"></i> AI Chat</a>
+
+    <p class="side-label">Creative Tools</p>
+    <a href="{% url 'core_app:image_editor' %}" class="side-link"><i class="lucide lucide-image"></i> Image Editor</a>
+    <a href="{% url 'core_app:design_studio' %}" class="side-link"><i class="lucide lucide-palette"></i> Design Studio</a>
+    <a href="{% url 'core_app:design_templates' %}" class="side-link"><i class="lucide lucide-layout-template"></i> Design Templates</a>
 
     <p class="side-label">Marketplace</p>
     <a href="{% url 'core_app:marketplace' %}" class="side-link"><i class="lucide lucide-store"></i> Browse Products</a>
@@ -178,9 +184,9 @@
         <a href="{% url 'core_app:tool_pdf_to_word' %}"><button class="tool"><span class="tag tag-red">PDF</span><span>PDF to Word</span></button></a>
         <a href="{% url 'core_app:tool_word_to_pdf' %}"><button class="tool"><span class="tag tag-blue">DOC</span><span>Word to PDF</span></button></a>
         <a href="{% url 'core_app:tool_excel_to_csv' %}"><button class="tool"><span class="tag tag-green">CSV</span><span>Excel to CSV</span></button></a>
-        <a href="#" style="pointer-events: none; opacity: 0.5;"><button class="tool" disabled><span class="tag tag-purple">OCR</span><span>Image to Text (Soon)</span></button></a>
-        <a href="#" style="pointer-events: none; opacity: 0.5;"><button class="tool" disabled><span class="tag tag-orange">PDF</span><span>Merge PDF (Soon)</span></button></a>
-        <a href="#" style="pointer-events: none; opacity: 0.5;"><button class="tool" disabled><span class="tag tag-pink">ZIP</span><span>Compress (Soon)</span></button></a>
+        <a href="{% url 'core_app:image_editor' %}"><button class="tool"><span class="tag tag-purple">IMG</span><span>Image Editor</span></button></a>
+        <a href="{% url 'core_app:design_studio' %}"><button class="tool"><span class="tag tag-orange">DSN</span><span>Design Studio</span></button></a>
+        <a href="{% url 'core_app:design_templates' %}"><button class="tool"><span class="tag tag-pink">TPL</span><span>Design Templates</span></button></a>
       </div>
     </section>
 
